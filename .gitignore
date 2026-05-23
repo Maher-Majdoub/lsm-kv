@@ -10,3 +10,9 @@ cmake_install.cmake
 # Compiled binaries
 *.out
 *.exe
+compile_commands.json
+
+# VSCode settings
+.vscode/
+
+.cache/

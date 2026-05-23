@@ -1,7 +1,8 @@
+#pragma once
+
 #include "skiplist.h"
 #include <vector>
 #include <random>
-#include <cstdint>
 
 namespace lsm {
   template <typename K, typename V> 

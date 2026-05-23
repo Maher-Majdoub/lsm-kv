@@ -1,3 +1,5 @@
+#pragma once
+
 #include "memtable.h"
 #include <string>
 #include <optional>
@@ -11,7 +13,7 @@ namespace lsm {
   }
 
   std::optional<std::string> MemTable::get(const std::string& key) {
-    auto res = table_.find(key);
+    std::optional<std::string> res = table_.find(key);
 
     if (!res || *res == TOMBSTONE_) return std::nullopt;
     return res;
