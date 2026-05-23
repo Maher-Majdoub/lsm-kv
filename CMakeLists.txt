@@ -9,13 +9,9 @@ project(lsm-kv
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) 
 
-
-# Output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-# Include headers
-include_directories(${PROJECT_SOURCE_DIR}/include)
 
 set(SOURCES
   src/main.cpp
@@ -23,7 +19,9 @@ set(SOURCES
 
 add_executable(lsm_kv ${SOURCES})
 
-if (MSVC)
+target_include_directories(lsm_kv PRIVATE ${PROJECT_SOURCE_DIR}/include)
+
+if(MSVC)
   target_compile_options(lsm_kv PRIVATE /W4)
 else()
   target_compile_options(lsm_kv PRIVATE -Wall -Wextra -Wpedantic)
