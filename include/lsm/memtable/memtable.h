@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <string>
 #include <optional>
 #include <lsm/ds/skiplist.h>
@@ -15,7 +16,7 @@ namespace lsm {
 
       void remove(const std::string& key);
 
-      size_t size() const;
+      size_t size();
 
     private:
       SkipList<std::string, std::string> table_;

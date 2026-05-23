@@ -23,8 +23,7 @@ namespace lsm {
     table_.insert(key, TOMBSTONE_);
   }
 
-  size_t MemTable::size() const {
-    // TODO: implement size tracking
-    return 0;
+  size_t MemTable::size() {
+    return table_.size();
   } 
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <cstddef>
 #include <random>
 #include <cstdint>
 #include <optional> 
@@ -10,10 +10,10 @@ struct Node {
   K key;
   V value;
   uint64_t seq;
-  std::vector<Node*> forward;
+  Node** forward;
 
   Node(const K& k, const V& v, uint64_t s, int level)
-    : key(k), value(v), seq(s), forward(level + 1, nullptr) {}
+    : key(k), value(v), seq(s), forward(new Node*[level + 1]()) {}
 };
 
 namespace lsm {
@@ -34,6 +34,8 @@ namespace lsm {
 
       std::optional<V> find(const K& key);
 
+      size_t size();
+
     private: 
       int randomLevel();
 
@@ -44,6 +46,7 @@ namespace lsm {
       const float p_;
       uint64_t seq_;
       mutable std::mt19937 engine_;
+      size_t bytes_ = 0;
   };
 }
 

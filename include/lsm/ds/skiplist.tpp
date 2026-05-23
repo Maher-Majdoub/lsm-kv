@@ -1,6 +1,8 @@
 #pragma once
 
 #include "skiplist.h"
+#include <lsm/utils/size.h>
+#include <cstddef>
 #include <vector>
 #include <random>
 
@@ -45,6 +47,7 @@ namespace lsm {
     
     if (candidate && candidate->key == key) {
       // update existing node
+      bytes_ += sizeOf(value) - sizeOf(candidate->value);
       candidate->value = value;
       candidate->seq = ++seq_;
       return;
@@ -52,12 +55,18 @@ namespace lsm {
   
     // create new node
     int node_level = randomLevel();
+
     Node<K, V>* new_node = new Node<K, V>(key, value, ++seq_, node_level);
   
     for (int level = 0; level <= node_level; level++) {
       new_node->forward[level] = update[level]->forward[level];
       update[level]->forward[level] = new_node;
     }
+
+    bytes_ += sizeof(Node<K,V>)
+            + sizeof(Node<K,V>*) * (node_level + 1)
+            + lsm::sizeOf(key)
+            + lsm::sizeOf(value);
   }
   
   template <typename K, typename V>
@@ -101,5 +110,8 @@ namespace lsm {
   
     return nullptr;
   } 
+
+  template <typename K, typename V>
+  size_t SkipList<K, V>::size() { return bytes_; }
 }
 
