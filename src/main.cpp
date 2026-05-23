@@ -1,3 +1,4 @@
+#include <cstddef>
 #include<iostream>
 #include<string>
 #include<lsm/memtable/memtable.h>
@@ -26,5 +27,7 @@ int main() {
       std::cout << "END" << std::endl;
       break;
     }
+
+    std::cout << "size: " << table.size() / 1024.0 << " KB\n";
   }
 }
