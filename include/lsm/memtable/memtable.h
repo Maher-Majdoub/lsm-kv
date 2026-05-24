@@ -23,5 +23,3 @@ namespace lsm {
       const std::string TOMBSTONE_;
   };
 }
-
-#include "memtable.tpp"

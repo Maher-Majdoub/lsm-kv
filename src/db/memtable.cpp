@@ -1,9 +1,8 @@
 #pragma once
 
-#include "memtable.h"
+#include <lsm/memtable/memtable.h>
 #include <string>
 #include <optional>
-#include <lsm/ds/skiplist.h>
 
 namespace lsm {
   MemTable::MemTable(): TOMBSTONE_("__TOMBSTONE__") {}

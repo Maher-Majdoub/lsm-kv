@@ -15,6 +15,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(SOURCES
   src/main.cpp
+  src/db/db.cpp
+  src/db/memtable.cpp
 )
 
 add_executable(lsm_kv ${SOURCES})
