@@ -17,6 +17,8 @@ set(SOURCES
   src/main.cpp
   src/db/db.cpp
   src/db/memtable.cpp
+  src/db/sstable/sstable_builder.cpp
+  src/services/config_service.cpp
 )
 
 add_executable(lsm_kv ${SOURCES})
