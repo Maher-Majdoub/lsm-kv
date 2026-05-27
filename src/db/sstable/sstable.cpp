@@ -1,22 +1,23 @@
 #include "lsm/sstable/sstable.h"
-#include "lsm/services/config_service.h"
+#include "lsm/sstable/base_sstable.h"
 
 #include <cstring>
 #include <fstream>
-#include <ios>
-#include <iostream>
 #include <optional>
-#include<string>
+#include <string>
 #include <vector>
 
-SSTable::SSTable(const std::string& file_name) {
-  auto dataFolderPath = ConfigService::get("DATA_FOLDER_PATH").value_or("./data");
-  std::filesystem::create_directories(dataFolderPath);
 
-  file_.open(dataFolderPath + "/"+ file_name, std::ios::binary);
-  loadIndexes_();
+SSTable::SSTable(const std::string& file_name): BaseSStable(file_name) {
+  file_.open(file_path_, std::ios::binary);
+  
+  load_footer_();
+  load_indexes_();
 }
 
+SSTable::~SSTable() { 
+  file_.close();
+}
 
 std::optional<std::string> SSTable::find(const std::string& key) {
   int left = 0, right = index_.size() - 1;
@@ -24,108 +25,86 @@ std::optional<std::string> SSTable::find(const std::string& key) {
   while (left < right) {
     int middle = left + (right - left + 1) / 2;
 
-    std::string current_key = readKey_(index_[middle].first);
+    std::string current_key = read_key_(index_[middle].first);
 
     if (current_key <= key) left = middle;
     else right = middle - 1;
   }
 
-  const auto& [bloc_start, bloc_end] = index_[left];
-  size_t bloc_size = bloc_end - bloc_start;
+  std::vector<char> buffer = read_block_(index_[left]);
 
-  file_.seekg(bloc_start, std::ios::beg);
-
-  std::vector<char> buffer(bloc_size);
-  file_.read(buffer.data(), bloc_size);
-  
   std::optional<std::string> found_value;
   
   size_t pos = 0;
   while (pos < buffer.size()) { 
-    Offset key_size, value_size; // TODO: change the type of size
-    std::memcpy(&key_size, buffer.data() + pos, sizeof(Offset));
-    pos += sizeof(key_size);
+    RecordHeader record_header;
+    std::memcpy(&record_header, buffer.data() + pos, sizeof(record_header));
+
+    pos += sizeof(record_header);
     
-    std::memcpy(&value_size, buffer.data() + pos, sizeof(Offset));
-    pos += sizeof(value_size);
-    
-    std::string current_key(buffer.data() + pos, key_size);
+    std::string current_key(buffer.data() + pos, record_header.key_size);
     
     if (current_key > key) break;
 
-    pos += key_size;
+    pos += record_header.key_size;
 
     if (current_key == key) {
-      std:: string value(buffer.data() + pos, value_size);
+      std:: string value(buffer.data() + pos, record_header.value_size);
       found_value = value;
     }
 
-    pos += value_size;
-  }
-
-  if (found_value) {
-    std::cout << "found: " << *found_value << "\n";
-  }
-  
-  else {
-    std::cout << "NOT FOUND\n";
+    pos += record_header.value_size;
   }
 
   return found_value;
 }
 
-void SSTable::loadIndexes_() {
-  file_.seekg(0, std::ios::end);
-  
-  std::streamoff file_size = file_.tellg();
-  
-  file_.seekg(file_size - sizeof(Offset), std::ios::beg); 
-  
-  Offset start_index_offset;
-  
-  file_.read(reinterpret_cast<char*>(&start_index_offset), sizeof(start_index_offset));
-  
-  std::streamoff index_size = file_size - sizeof(Offset) - start_index_offset;
+void SSTable::load_indexes_() {
+  file_.seekg(footer_.indexes_bloc_start_offset, std::ios::beg);
 
-  file_.seekg(start_index_offset, std::ios::beg);
-  std::vector<char> buffer(index_size);
+  int count = footer_.indexes_bloc_size / sizeof(index_t);
+  index_.resize(count);
 
-  file_.read(buffer.data(), index_size);
-
-  int count = buffer.size() / (sizeof(Offset) * 2);
-
-  index_.reserve(count);
-
-  for (int i = 0; i < count; i++) {
-    Offset start, end;
-
-    std::memcpy(
-      &start, 
-      buffer.data() + i * 2 * sizeof(Offset),
-      sizeof(Offset)
-    );
-
-    std::memcpy(
-      &end, 
-      buffer.data() + (i * 2 + 1) * sizeof(Offset),
-      sizeof(Offset)
-    );
-
-    index_.push_back({ start, end });
-  }
+  file_.read((char*) index_.data(), footer_.indexes_bloc_size);
 }
 
-std::string SSTable::readKey_(Offset offset) {
-  // reading key size
-  file_.seekg(offset, std::ios::beg);
-  Offset key_size;
-  file_.read(reinterpret_cast<char*>(&key_size), sizeof(key_size));
+std::string SSTable::read_key_(offset_t offset) {
+  RecordHeader record_header = read_record_header_(offset);
 
-  // reading key
-  file_.seekg(offset + 2 * sizeof(Offset));
   std::string key;
-  key.resize(key_size);
-  file_.read(&key[0], key_size);
+  
+  // reading key
+  file_.seekg(offset + sizeof(record_header));
+  key.resize(record_header.key_size);
+  file_.read(&key[0], record_header.key_size);
 
   return key;
-} 
+}
+
+void SSTable::load_footer_() {
+  file_.seekg(0, std::ios::end);
+  std::streamoff file_size = file_.tellg();
+  file_.seekg(file_size - sizeof(footer_), std::ios::beg); 
+
+  file_.read((char*) &footer_, sizeof(footer_));
+}
+
+BaseSStable::RecordHeader SSTable::read_record_header_(offset_t offset) { 
+  file_.seekg(offset, std::ios::beg);
+  RecordHeader record_header;
+
+  file_.read((char*) &record_header, sizeof(record_header));
+
+  return record_header;
+}
+
+std::vector<char> SSTable::read_block_(const index_t& block_index) {
+  const auto& [block_start, block_end] = block_index;
+  size_t block_size = block_end - block_start;
+
+  file_.seekg(block_start, std::ios::beg);
+
+  std::vector<char> buffer(block_size);
+  file_.read(buffer.data(), block_size);
+  return buffer;
+}

@@ -17,6 +17,7 @@ set(SOURCES
   src/main.cpp
   src/db/db.cpp
   src/db/memtable.cpp
+  src/db/sstable/base_sstable.cpp
   src/db/sstable/sstable.cpp
   src/db/sstable/sstable_builder.cpp
   src/services/config_service.cpp

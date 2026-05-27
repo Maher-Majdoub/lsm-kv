@@ -3,6 +3,8 @@
 #include "lsm/sstable/sstable_builder.h"
 #include<lsm/db/db.h>
 
+#include <iostream>
+
 int main() {
   SSTableBuilder sstable = SSTableBuilder("data.sst");
 
@@ -15,5 +17,7 @@ int main() {
 
 
   SSTable sst("data.sst");
-  sst.find("4");
+  auto result = sst.find("4");
+
+  std::cout << (result ? ((std::string)"found : " + *result) : "not found") << "\n";
 }
