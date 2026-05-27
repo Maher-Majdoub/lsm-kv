@@ -24,20 +24,18 @@ void SSTableBuilder::add(const std::string& key, const std::string& value) {
 
   curr_cnt_ ++;
 
-  last_offset_ = curr_offset_;
   curr_offset_ += sizeof(key_size) + sizeof(value_size) + key_size + value_size;
 
   if (curr_cnt_ >= cnt_per_bloc_) {
-    offsets_.push_back({ bloc_start, last_offset_ } );
+    offsets_.push_back({ bloc_start, curr_offset_ } );
     curr_cnt_ = 0;
     bloc_start = curr_offset_;
   }
-
 }
 
 void SSTableBuilder::finish() {
   if (curr_cnt_) {
-    offsets_.push_back({ bloc_start,  last_offset_ } );
+    offsets_.push_back({ bloc_start,  curr_offset_ } );
   }
 
   for (const auto& [start, end]: offsets_) {
