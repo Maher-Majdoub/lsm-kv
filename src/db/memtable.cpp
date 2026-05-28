@@ -1,6 +1,6 @@
 #pragma once
 
-#include <lsm/memtable/memtable.h>
+#include <lsm/db/memtable/memtable.h>
 #include <string>
 #include <optional>
 

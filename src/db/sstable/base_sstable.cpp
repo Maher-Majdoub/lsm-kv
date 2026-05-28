@@ -1,4 +1,4 @@
-#include "lsm/sstable/base_sstable.h"
+#include "lsm/db/sstable/base_sstable.h"
 #include "lsm/services/config_service.h"
 
 #include <string>

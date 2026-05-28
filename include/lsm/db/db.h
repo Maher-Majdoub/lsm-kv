@@ -1,7 +1,8 @@
 #pragma once
 
+#include "memtable/memtable.h"
+
 #include <string>
-#include "lsm/memtable/memtable.h"
 
 namespace lsm {
   class DB {

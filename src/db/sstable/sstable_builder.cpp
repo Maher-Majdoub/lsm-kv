@@ -1,4 +1,4 @@
-#include "lsm/sstable/sstable_builder.h"
+#include "lsm/db/sstable/sstable_builder.h"
 
 #include <cstddef>
 #include <string>

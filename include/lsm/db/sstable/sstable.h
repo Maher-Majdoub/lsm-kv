@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lsm/sstable/base_sstable.h"
+#include "base_sstable.h"
 
 #include <cstddef>
 #include <fstream>

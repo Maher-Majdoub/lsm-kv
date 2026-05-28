@@ -1,4 +1,5 @@
 #include "lsm/db/db.h"
+
 #include <cstddef>
 #include <optional>
 #include <string>

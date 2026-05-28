@@ -1,4 +1,5 @@
 #include "lsm/services/config_service.h"
+
 #include <optional>
 #include <cstdlib>
 #include <stdexcept>

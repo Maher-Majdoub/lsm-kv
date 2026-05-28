@@ -1,7 +1,7 @@
 #pragma once
 
 #include "base_sstable.h"
-#include "lsm/sstable/config.h"
+#include "config.h"
 
 #include <cstddef>
 #include <string>
