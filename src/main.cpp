@@ -6,7 +6,7 @@
 #include <iostream>
 
 int main() {
-  SSTableBuilder sstable = SSTableBuilder("data.sst");
+  lsm::SSTableBuilder sstable("data.sst");
 
   sstable.add("1", "world1");
   sstable.add("2", "world2");
@@ -16,7 +16,7 @@ int main() {
   sstable.finish();
 
 
-  SSTable sst("data.sst");
+  lsm::SSTable sst("data.sst");
   auto result = sst.find("4");
 
   std::cout << (result ? ((std::string)"found : " + *result) : "not found") << "\n";
