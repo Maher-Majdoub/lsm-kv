@@ -1,14 +1,7 @@
 #include "lsm/db/sstable/base_sstable.h"
-#include "lsm/services/config_service.h"
 
 #include <string>
-#include <fstream>
 
 namespace lsm {
-  BaseSStable::BaseSStable(const std::string& file_name) {
-    auto dataFolderPath = ConfigService::get("DATA_FOLDER_PATH").value_or("./data");
-    std::filesystem::create_directories(dataFolderPath);
-    
-    file_path_ = dataFolderPath + "/"+ file_name;
-  }
+  BaseSStable::BaseSStable(const std::string& file_path): file_path_(file_path) {}
 }

@@ -5,8 +5,8 @@
 #include <iostream>
 
 namespace lsm {
-  SSTableBuilder::SSTableBuilder(const std::string& file_name): 
-    BaseSStable(file_name)
+  SSTableBuilder::SSTableBuilder(const std::string& file_path): 
+    BaseSStable(file_path)
   {
     file_.open(file_path_, std::ios::binary);
   }
@@ -41,7 +41,8 @@ namespace lsm {
   
     file_.write((char *) index_.data(), indexes_block_size);
     file_.write((char*) &footer, sizeof(footer));
-  
+    
+    file_.flush();
     file_.close();
   }
   

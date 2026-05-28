@@ -58,7 +58,7 @@ namespace lsm {
           indexes_bloc_start_offset(indexes_bloc_start_offset), indexes_bloc_size(indexes_bloc_size) {}
       };
 
-      BaseSStable(const std::string& file_name);
+      BaseSStable(const std::string& file_path_);
 
     protected:
       std::string file_path_;

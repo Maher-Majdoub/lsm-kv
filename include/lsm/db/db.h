@@ -1,19 +1,26 @@
 #pragma once
 
+#include "lsm/db/sstable/sstable.h"
 #include "memtable/memtable.h"
 
 #include <string>
+#include <vector>
 
 namespace lsm {
   class DB {
     public: 
-      explicit DB(size_t memtable_max_size = 64 * 1024);
+      DB();
       std::optional<std::string> get(const std::string& key);
       void set(const std::string& key, const std::string& value);
       void remove(const std::string& key);
       void display_memtable();
     private: 
-      lsm::MemTable mem_table_;
+      MemTable* memtable_;
       size_t memtable_max_size_;
+      std::vector<SSTable*> sstables_;
+      std::string sstables_folder_path_;
+
+      void post_update_();
+      void flush_memtable_();
   };
 }
