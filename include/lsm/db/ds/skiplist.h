@@ -5,21 +5,25 @@
 #include <cstdint>
 #include <optional> 
 
-template <typename K, typename V>
-struct Node {
-  K key;
-  V value;
-  uint64_t seq;
-  Node** forward;
-
-  Node(const K& k, const V& v, uint64_t s, int level)
-    : key(k), value(v), seq(s), forward(new Node*[level + 1]()) {}
-};
-
 namespace lsm {
+  template<typename K, typename V>
+  class SkiplistIterator;
+
   template <typename K, typename V>
   class SkipList {
+    friend class SkiplistIterator<K, V>;
+
     public:
+      struct Node {
+        K key;
+        V value;
+        uint64_t seq;
+        Node** forward;
+
+        Node(const K& k, const V& v, uint64_t s, int level)
+          : key(k), value(v), seq(s), forward(new Node*[level + 1]()) {}
+      };
+
       SkipList(int max_level = 16, float p = 0.5);
 
       ~SkipList();
@@ -39,9 +43,9 @@ namespace lsm {
     private: 
       int randomLevel();
 
-      Node<K, V>* findNode_(const K& key);
+      Node* findNode_(const K& key);
 
-      Node<K, V>* head_;
+      Node* head_;
       const int max_level_;
       const float p_;
       uint64_t seq_;

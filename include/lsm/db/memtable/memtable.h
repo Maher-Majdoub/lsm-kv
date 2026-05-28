@@ -8,6 +8,8 @@
 
 namespace lsm {
   class MemTable {
+    friend class MemtableIterator;
+    
     public: 
       MemTable();
 
