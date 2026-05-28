@@ -1,6 +1,8 @@
 #include "lsm/db/db.h"
+#include "lsm/db/memtable/memtable_iterator.h"
 
 #include <cstddef>
+#include <iostream>
 #include <optional>
 #include <string>
 
@@ -17,5 +19,13 @@ namespace lsm {
 
   void DB::remove(const std::string& key) {
     return mem_table_.remove(key);
+  }
+
+  void DB::display_memtable() {
+    MemtableIterator it(mem_table_);
+
+    for (it.first(); !it.is_done(); ++it) {
+      std::cout << it.key() << " " << it.value() << "\n";
+    }
   }
 }
