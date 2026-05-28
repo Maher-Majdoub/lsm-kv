@@ -1,33 +1,23 @@
+#include "lsm/db/sstable/sstable.h"
+#include "lsm/db/sstable/sstable_builder.h"
+// #include "lsm/db/db.h"
+
 #include <cstddef>
-#include<iostream>
-#include<string>
-#include<lsm/memtable/memtable.h>
+#include <iostream>
 
 int main() {
-  lsm::MemTable table;
+  lsm::SSTableBuilder sstable("data.sst");
 
-  std::string operation, key, value;
+  sstable.add("1", "world1");
+  sstable.add("2", "world2");
+  sstable.add("3", "world3");
+  sstable.add("4", "world4");
+  sstable.add("5", "world5");
+  sstable.finish();
 
-  while (true) {
-    std::cin >> operation >> key;
 
-    if (operation == "set" || operation == "update") {
-      std::cin >> value;
+  lsm::SSTable sst("data.sst");
+  auto result = sst.find("4");
 
-      table.set(key, value);
-    } 
-    else if (operation == "delete") {
-      table.remove(key);
-    } 
-    else if (operation == "get") {
-      auto result = table.get(key);
-      std::cout << (result ? *result : "NOT FOUND") <<  std::endl;
-    } 
-    else {
-      std::cout << "END" << std::endl;
-      break;
-    }
-
-    std::cout << "size: " << table.size() / 1024.0 << " KB\n";
-  }
+  std::cout << (result ? ((std::string)"found : " + *result) : "not found") << "\n";
 }

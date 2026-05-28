@@ -1,9 +1,10 @@
 #pragma once
 
+#include "lsm/db/ds/skiplist.h"
+
 #include <cstddef>
 #include <string>
 #include <optional>
-#include <lsm/ds/skiplist.h>
 
 namespace lsm {
   class MemTable {
@@ -23,5 +24,3 @@ namespace lsm {
       const std::string TOMBSTONE_;
   };
 }
-
-#include "memtable.tpp"
