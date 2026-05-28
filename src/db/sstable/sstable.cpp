@@ -8,7 +8,7 @@
 #include <vector>
 
 namespace lsm {
-  SSTable::SSTable(const std::string& file_name): BaseSStable(file_name) {
+  SSTable::SSTable(const std::string& file_path): BaseSStable(file_path) {
     file_.open(file_path_, std::ios::binary);
     
     load_footer_();

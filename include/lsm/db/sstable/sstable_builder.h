@@ -20,7 +20,7 @@ namespace lsm {
         }
       };
   
-      SSTableBuilder(const std::string& file_name);
+      SSTableBuilder(const std::string& file_path);
       ~SSTableBuilder();
   
       void add(const std::string& key, const std::string& value);

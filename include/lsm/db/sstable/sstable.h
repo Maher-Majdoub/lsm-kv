@@ -11,7 +11,7 @@
 namespace lsm {
   class SSTable: BaseSStable {
     public: 
-      SSTable(const std::string& file_name);
+      SSTable(const std::string& file_path);
       ~SSTable();
   
       std::optional<std::string> find(const std::string& key); 
