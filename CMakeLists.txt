@@ -19,6 +19,8 @@ set(SOURCES
   src/db/memtable.cpp
   src/db/sstable/sstable.cpp
   src/db/sstable/sstable_builder.cpp
+  src/db/sstable/sstable_block_iterator.cpp
+  src/db/sstable/sstable_iterator.cpp
   src/services/config_service.cpp
 )
 

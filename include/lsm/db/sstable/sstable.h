@@ -9,7 +9,10 @@
 #include <vector>
 
 namespace lsm {
+
   class SSTable {
+    friend class SSTableIterator;
+
     public: 
       SSTable(const std::string& file_path);
       ~SSTable();

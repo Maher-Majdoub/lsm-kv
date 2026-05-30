@@ -1,3 +1,4 @@
+#include "lsm/db/sstable/sstable_block_iterator.h"
 #include "lsm/db/sstable/sstable.h"
 
 #include <cstring>
@@ -31,30 +32,15 @@ namespace lsm {
     }
   
     std::vector<char> buffer = read_block_(index_[left]);
-  
+    
+    SSTableBlockIterator it(buffer);
     std::optional<std::string> found_value;
     
-    size_t pos = 0;
-    while (pos < buffer.size()) { 
-      sstable::RecordHeader record_header;
-      std::memcpy(&record_header, buffer.data() + pos, sizeof(record_header));
-  
-      pos += sizeof(record_header);
-      
-      std::string current_key(buffer.data() + pos, record_header.key_size);
-      
-      if (current_key > key) break;
-  
-      pos += record_header.key_size;
-  
-      if (current_key == key) {
-        std:: string value(buffer.data() + pos, record_header.value_size);
-        found_value = value;
-      }
-  
-      pos += record_header.value_size;
+    for (it.first(); !it.is_done(); ++it) {
+      if (it.key() > key) break;
+      if (it.key() == key) found_value = it.value();
     }
-  
+
     return found_value;
   }
   
