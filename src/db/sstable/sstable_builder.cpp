@@ -5,10 +5,8 @@
 #include <iostream>
 
 namespace lsm {
-  SSTableBuilder::SSTableBuilder(const std::string& file_path): 
-    BaseSStable(file_path)
-  {
-    file_.open(file_path_, std::ios::binary);
+  SSTableBuilder::SSTableBuilder(const std::string& file_path) {
+    file_.open(file_path, std::ios::binary);
   }
   
   SSTableBuilder::~SSTableBuilder() {
@@ -16,7 +14,7 @@ namespace lsm {
   }
   
   void SSTableBuilder::add(const std::string& key, const std::string& value) {
-    RecordHeader record_header(key.size(), value.size());
+    sstable::RecordHeader record_header(key.size(), value.size());
     
     size_t key_size = key.size();
     size_t value_size = value.size();
@@ -35,9 +33,9 @@ namespace lsm {
   void SSTableBuilder::finish() {
     flush_block_();
   
-    size_t indexes_block_size = index_.size() * sizeof(index_t);
+    size_t indexes_block_size = index_.size() * sizeof(sstable::index_t);
   
-    Footer footer(file_.tellp(), indexes_block_size);
+    sstable::Footer footer(file_.tellp(), indexes_block_size);
   
     file_.write((char *) index_.data(), indexes_block_size);
     file_.write((char*) &footer, sizeof(footer));
@@ -49,7 +47,7 @@ namespace lsm {
   void SSTableBuilder::flush_block_() {
     if (!current_block_.size) return;
   
-    offset_t block_end = current_block_.offset + current_block_.size;
+    sstable::offset_t block_end = current_block_.offset + current_block_.size;
   
     index_.push_back({ current_block_.offset, block_end } );
     
