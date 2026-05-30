@@ -1,5 +1,4 @@
 #include "lsm/db/sstable/sstable.h"
-#include "lsm/db/sstable/base_sstable.h"
 
 #include <cstring>
 #include <fstream>
