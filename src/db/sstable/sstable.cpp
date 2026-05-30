@@ -8,8 +8,8 @@
 #include <vector>
 
 namespace lsm {
-  SSTable::SSTable(const std::string& file_path): BaseSStable(file_path) {
-    file_.open(file_path_, std::ios::binary);
+  SSTable::SSTable(const std::string& file_path) {
+    file_.open(file_path, std::ios::binary);
     
     load_footer_();
     load_indexes_();
@@ -37,7 +37,7 @@ namespace lsm {
     
     size_t pos = 0;
     while (pos < buffer.size()) { 
-      RecordHeader record_header;
+      sstable::RecordHeader record_header;
       std::memcpy(&record_header, buffer.data() + pos, sizeof(record_header));
   
       pos += sizeof(record_header);
@@ -62,14 +62,14 @@ namespace lsm {
   void SSTable::load_indexes_() {
     file_.seekg(footer_.indexes_bloc_start_offset, std::ios::beg);
   
-    int count = footer_.indexes_bloc_size / sizeof(index_t);
+    int count = footer_.indexes_bloc_size / sizeof(sstable::index_t);
     index_.resize(count);
   
     file_.read((char*) index_.data(), footer_.indexes_bloc_size);
   }
   
-  std::string SSTable::read_key_(offset_t offset) {
-    RecordHeader record_header = read_record_header_(offset);
+  std::string SSTable::read_key_(sstable::offset_t offset) {
+    sstable::RecordHeader record_header = read_record_header_(offset);
   
     std::string key;
     
@@ -89,16 +89,16 @@ namespace lsm {
     file_.read((char*) &footer_, sizeof(footer_));
   }
   
-  BaseSStable::RecordHeader SSTable::read_record_header_(offset_t offset) { 
+  sstable::RecordHeader SSTable::read_record_header_(sstable::offset_t offset) { 
     file_.seekg(offset, std::ios::beg);
-    RecordHeader record_header;
+    sstable::RecordHeader record_header;
   
     file_.read((char*) &record_header, sizeof(record_header));
   
     return record_header;
   }
   
-  std::vector<char> SSTable::read_block_(const index_t& block_index) {
+  std::vector<char> SSTable::read_block_(const sstable::index_t& block_index) {
     const auto& [block_start, block_end] = block_index;
     size_t block_size = block_end - block_start;
   

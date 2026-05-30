@@ -7,11 +7,11 @@
 #include <optional>
 
 namespace lsm {
-  class MemTable {
+  class Memtable {
     friend class MemtableIterator;
     
     public: 
-      MemTable();
+      Memtable();
 
       void set(const std::string& key, const std::string& value);
 
@@ -22,7 +22,7 @@ namespace lsm {
       size_t size();
 
     private:
-      SkipList<std::string, std::string> table_;
+      Skiplist<std::string, std::string> table_;
       const std::string TOMBSTONE_;
   };
 }

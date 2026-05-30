@@ -1,7 +1,7 @@
 #pragma once
 
-#include "base_sstable.h"
 #include "config.h"
+#include "format.h"
 
 #include <cstddef>
 #include <string>
@@ -9,14 +9,14 @@
 #include <vector>
 
 namespace lsm {
-  class SSTableBuilder: BaseSStable {
+  class SSTableBuilder {
     public: 
       struct BlockState {
-        offset_t offset = 0;
+        sstable::offset_t offset = 0;
         size_t size = 0;
   
         bool can_add_entry(size_t entry_size) const { 
-          return size + entry_size <= lsm::config::sstable::MAX_BLOCK_SIZE;
+          return size + entry_size <= config::sstable::MAX_BLOCK_SIZE;
         }
       };
   
@@ -30,7 +30,7 @@ namespace lsm {
       std::ofstream file_;
   
       BlockState current_block_;
-      std::vector<index_t> index_;
+      std::vector<sstable::index_t> index_;
   
       void flush_block_();
   };

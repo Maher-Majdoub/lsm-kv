@@ -1,15 +1,15 @@
 #pragma once
 
-#include "base_sstable.h"
+#include "format.h"
 
 #include <cstddef>
 #include <fstream>
 #include <optional>
-#include<string>
+#include <string>
 #include <vector>
 
 namespace lsm {
-  class SSTable: BaseSStable {
+  class SSTable {
     public: 
       SSTable(const std::string& file_path);
       ~SSTable();
@@ -19,13 +19,13 @@ namespace lsm {
     private: 
       std::ifstream file_;
   
-      std::vector<index_t> index_;
-      Footer footer_;
+      std::vector<sstable::index_t> index_;
+      sstable::Footer footer_;
       
       void load_footer_();
       void load_indexes_();
-      std::string read_key_(offset_t offset);
-      RecordHeader read_record_header_(offset_t offset);
-      std::vector<char> read_block_(const index_t& block_index);
+      std::string read_key_(sstable::offset_t offset);
+      sstable::RecordHeader read_record_header_(sstable::offset_t offset);
+      std::vector<char> read_block_(const sstable::index_t& block_index);
   };
 }

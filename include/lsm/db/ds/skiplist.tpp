@@ -9,14 +9,14 @@
 
 namespace lsm {
   template <typename K, typename V> 
-  SkipList<K, V>::SkipList(int max_level, float p)
+  Skiplist<K, V>::Skiplist(int max_level, float p)
     : max_level_(max_level), p_(p), seq_(0) {
     head_ = new Node(K{}, V{}, 0, max_level_);
     engine_.seed(std::random_device{}());
   }
   
   template <typename K, typename V> 
-  SkipList<K, V>::~SkipList() {
+  Skiplist<K, V>::~Skiplist() {
     Node* node = head_;
     while (node) {
       Node* next = node->forward[0];
@@ -26,7 +26,7 @@ namespace lsm {
   }
   
   template <typename K, typename V> 
-  void SkipList<K, V>::insert(const K& key, const V& value) {
+  void Skiplist<K, V>::insert(const K& key, const V& value) {
     std::vector<Node*> update(max_level_ + 1, nullptr);
   
     Node* current_node = head_;
@@ -71,7 +71,7 @@ namespace lsm {
   }
   
   template <typename K, typename V>
-  std::optional<V> SkipList<K, V>::find(const K& key) {
+  std::optional<V> Skiplist<K, V>::find(const K& key) {
       Node* node = findNode_(key);
       if (!node) return std::nullopt;
       return node->value;
@@ -79,7 +79,7 @@ namespace lsm {
   
   
   template <typename K, typename V> 
-  int SkipList<K, V>::randomLevel() {
+  int Skiplist<K, V>::randomLevel() {
     int lvl = 0;
     std::uniform_real_distribution<float> dist(0.0, 1.0);
   
@@ -89,7 +89,7 @@ namespace lsm {
   }
   
   template <typename K, typename V> 
-  SkipList<K, V>::Node* SkipList<K, V>::findNode_(const K& key) {
+  Skiplist<K, V>::Node* Skiplist<K, V>::findNode_(const K& key) {
     int level = max_level_;
   
     Node* current_node = head_;
@@ -113,6 +113,6 @@ namespace lsm {
   } 
 
   template <typename K, typename V>
-  size_t SkipList<K, V>::size() { return bytes_; }
+  size_t Skiplist<K, V>::size() { return bytes_; }
 }
 
