@@ -9,7 +9,7 @@
 namespace lsm {
   class MemtableIterator: public Iterator<std::string, std::string> { 
     public: 
-      MemtableIterator(MemTable& memtable): skiptlist_it_(memtable.table_) {}
+      MemtableIterator(Memtable& memtable): skiptlist_it_(memtable.table_) {}
 
       void first() override { skiptlist_it_.first(); }
       void next() override { skiptlist_it_.next(); }

@@ -15,7 +15,7 @@ namespace lsm {
       void remove(const std::string& key);
       void display_memtable();
     private: 
-      MemTable* memtable_;
+      Memtable* memtable_;
       size_t memtable_max_size_;
       std::vector<SSTable*> sstables_;
       std::string sstables_folder_path_;

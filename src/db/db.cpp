@@ -14,7 +14,7 @@
 
 namespace lsm {
   DB::DB(): 
-    memtable_(new MemTable()), 
+    memtable_(new Memtable()), 
     sstables_folder_path_(ConfigService::get("DATA_FOLDER_PATH").value_or("./data")) 
   {   
     std::filesystem::create_directories(sstables_folder_path_);
@@ -55,7 +55,7 @@ namespace lsm {
   void DB::post_update_() {
     if (memtable_->size() >= db::config::MAX_MEMTABLE_SIZE) {
       flush_memtable_();
-      memtable_ = new MemTable();
+      memtable_ = new Memtable();
     }
   }
 

@@ -7,9 +7,9 @@ namespace lsm {
   template <typename K, typename V>
   class SkiplistIterator: public Iterator<K, V> {
     public: 
-      using Node = typename SkipList<K, V>::Node;
+      using Node = typename Skiplist<K, V>::Node;
 
-      SkiplistIterator(const SkipList<K, V>& list): head_(list.head_), current_(nullptr) {}
+      SkiplistIterator(const Skiplist<K, V>& list): head_(list.head_), current_(nullptr) {}
 
       void first() override { current_ = head_; }
       void next() override { current_ = current_->forward[0]; }

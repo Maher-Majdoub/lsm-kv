@@ -10,7 +10,7 @@ namespace lsm {
   class SkiplistIterator;
 
   template <typename K, typename V>
-  class SkipList {
+  class Skiplist {
     friend class SkiplistIterator<K, V>;
 
     public:
@@ -24,15 +24,15 @@ namespace lsm {
           : key(k), value(v), seq(s), forward(new Node*[level + 1]()) {}
       };
 
-      SkipList(int max_level = 16, float p = 0.5);
+      Skiplist(int max_level = 16, float p = 0.5);
 
-      ~SkipList();
+      ~Skiplist();
 
       // Non-copyable and non-movable: prevents double deletion of nodes
-      SkipList(const SkipList&) = delete;
-      SkipList& operator=(const SkipList&) = delete;
-      SkipList(SkipList&&) = delete;
-      SkipList& operator=(SkipList&&) = delete;
+      Skiplist(const Skiplist&) = delete;
+      Skiplist& operator=(const Skiplist&) = delete;
+      Skiplist(Skiplist&&) = delete;
+      Skiplist& operator=(Skiplist&&) = delete;
 
       void insert(const K& key, const V& value);
 
