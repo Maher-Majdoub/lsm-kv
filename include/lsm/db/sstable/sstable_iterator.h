@@ -4,6 +4,7 @@
 #include "lsm/db/iterators/iterator.h"
 #include "sstable.h"
 
+#include <memory>
 #include <string>
 
 namespace lsm {
@@ -19,10 +20,10 @@ namespace lsm {
       const std::string& value() const override;
 
     private: 
-      SSTable& sstable_;
+      std::unique_ptr<SSTable> sstable_;
 
       size_t p_index_;
-      SSTableBlockIterator* block_it_;
+      std::unique_ptr<SSTableBlockIterator> block_it_;
 
       void update_block_iterator_();
   };

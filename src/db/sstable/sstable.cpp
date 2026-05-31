@@ -3,6 +3,7 @@
 
 #include <cstring>
 #include <fstream>
+#include <iostream>
 #include <optional>
 #include <string>
 #include <vector>
@@ -15,9 +16,9 @@ namespace lsm {
     load_indexes_();
   }
   
-  SSTable::~SSTable() { 
-    file_.close();
-  }
+  // SSTable::~SSTable() { 
+  //   file_.close();
+  // }
   
   std::optional<std::string> SSTable::find(const std::string& key) {
     int left = 0, right = index_.size() - 1;

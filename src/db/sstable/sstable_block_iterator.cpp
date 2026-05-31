@@ -2,7 +2,7 @@
 #include "lsm/db/sstable/format.h"
 
 namespace lsm {
-  SSTableBlockIterator::SSTableBlockIterator(const std::vector<char>& buffer): buffer_(buffer) {}
+  SSTableBlockIterator::SSTableBlockIterator(const std::vector<char> buffer): buffer_(buffer) {}
 
   void SSTableBlockIterator::first() { 
     pos_ = 0; 
@@ -26,7 +26,9 @@ namespace lsm {
     return current_value_;
   }
 
-  void SSTableBlockIterator::update_() {
+  void SSTableBlockIterator::update_() { 
+    if (pos_ >= buffer_.size()) return;
+    
     current_size_ = 0;
     sstable::RecordHeader record_header;
 
@@ -37,6 +39,6 @@ namespace lsm {
     current_size_ += record_header.key_size;
 
     current_value_.assign(buffer_.data() + pos_ + current_size_, record_header.value_size);
-    current_size_ += record_header.value_size;;
+    current_size_ += record_header.value_size;
   }
 }

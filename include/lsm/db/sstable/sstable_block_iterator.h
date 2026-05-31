@@ -9,7 +9,7 @@
 namespace lsm {
   class SSTableBlockIterator: public Iterator<std::string, std::string> {
     public: 
-      SSTableBlockIterator(const std::vector<char>& buffer);
+      SSTableBlockIterator(const std::vector<char> buffer);
 
       void first() override;
       void next() override;
@@ -19,7 +19,7 @@ namespace lsm {
       const std::string& value() const override;
 
     private: 
-      const std::vector<char>& buffer_;
+      const std::vector<char> buffer_;
       std::string current_key_, current_value_;
       size_t pos_;
       size_t current_size_;
