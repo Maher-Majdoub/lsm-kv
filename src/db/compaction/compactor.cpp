@@ -3,7 +3,6 @@
 #include "lsm/db/sstable/sstable.h"
 #include "lsm/db/sstable/sstable_iterator.h"
 
-#include <iostream>
 #include <vector>
 
 namespace lsm {
@@ -32,7 +31,6 @@ namespace lsm {
     
       if (!curr_it) break; // done
       buidler.add(curr_it->key(), curr_it->value());
-      std::cout << curr_it->value() << "\n";
       curr_it->next();
     }
 
