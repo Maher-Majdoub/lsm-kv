@@ -1,18 +1,22 @@
+#include "lsm/db/db.h"
 #include "lsm/db/manifest/manifest_manager.h"
 #include "lsm/services/config_service.h"
 
 #include <cassert>
 #include <cstddef>
+#include <iostream>
 
 int main() {
-  // lsm::DB db;
+  lsm::DB db;
 
-  // int n = 1000;
+  int n = 1000;
 
-  // // for (int i = 0; i < n; i++) {
-  // //   std::string key = "key" + std::to_string(i), value = "value" + std::to_string(i);
-  // //   db.set(key, value);
-  // // }
+  for (int i = 0; i < n; i++) {
+    std::string key = "key" + std::to_string(i), value = "value" + std::to_string(i);
+    db.set(key, value);
+  }
+
+  db.display_memtable();
 
   // // auto result = db.get("key0");
   // // if (result) {
@@ -57,6 +61,6 @@ int main() {
   //   assert(table.find("key" + std::to_string(i)));
   // }
 
-  lsm::ManifestManager manifest(lsm::ConfigService::get("DATA_FOLDER_PATH").value_or("./data") + "/meta");
+  // lsm::ManifestManager manifest(lsm::ConfigService::get("DATA_FOLDER_PATH").value_or("./data") + "/meta");
   
 }

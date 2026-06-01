@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <fstream>
 #include <filesystem>
-#include <iostream>
 #include <optional>
 #include <memory>
 #include <string>
@@ -22,7 +21,6 @@ namespace lsm {
 
   void ManifestManager::add_sstable(std::shared_ptr<SSTableMetadata> metadata) {
     // write [operation][level][file_path_size][file_path][min_key_size][min_key][max_key_size][max_key]
-
     std::string file_path = metadata->path.string();
 
     size_t file_path_size = file_path.size();
@@ -65,13 +63,15 @@ namespace lsm {
     std::unordered_map<std::string, std::unique_ptr<SSTableMetadata>> sstables_mp;
 
     for (manifest::Entry& entry: entries) {
+      std::string path = entry.metadata.path.string();
+
       switch (entry.operation) {
         case manifest::Operation::ADD: {
-          sstables_mp[entry.metadata.path.string()] = std::make_unique<SSTableMetadata>(std::move(entry.metadata));
+          sstables_mp[path] = std::make_unique<SSTableMetadata>(std::move(entry.metadata));
           break;
         }
         case manifest::Operation::REMOVE: {
-          sstables_mp.erase(entry.metadata.path.string());
+          sstables_mp.erase(path);
           break;
         }
         default: throw std::runtime_error("UNKNOWN OPERATION");
@@ -83,13 +83,13 @@ namespace lsm {
       sstables_[level].push_back(std::move(*metadata));
     }
 
-    std::ofstream manifest_file(path, std::ios::binary);
+    std::ofstream manifest_file(path, std::ios::binary | std::ios::app);
     use_manifest_(manifest_file, name);
   }
 
   void ManifestManager::create_(const std::string& name) {
     std::filesystem::path path = work_dir_ / name;
-    std::ofstream manifest(path, std::ios::binary);
+    std::ofstream manifest(path, std::ios::binary | std::ios::app);
 
     // TODO: Add Manifest Header
     

@@ -1,4 +1,5 @@
 #include "lsm/db/db.h"
+#include "lsm/db/common/sstable_metadata.h"
 #include "lsm/db/config.h"
 #include "lsm/db/memtable/memtable_iterator.h"
 #include "lsm/db/sstable/sstable_builder.h"
@@ -9,14 +10,16 @@
 #include <cstddef>
 #include <filesystem>
 #include <iostream>
+#include <memory>
 #include <optional>
 #include <string>
 
 namespace lsm {
   DB::DB(): 
-    memtable_(new Memtable()), 
-    sstables_folder_path_(ConfigService::get("DATA_FOLDER_PATH").value_or("./data")) 
-  {   
+    memtable_(new Memtable), 
+    sstables_folder_path_(ConfigService::get("DATA_FOLDER_PATH").value_or("./data")), 
+    manifest_manager_(sstables_folder_path_ + "/meta") 
+  {
     std::filesystem::create_directories(sstables_folder_path_);
 
     for (const auto &entry : std::filesystem::directory_iterator(sstables_folder_path_)) {
@@ -70,6 +73,15 @@ namespace lsm {
     for (it.first(); !it.is_done(); ++it) {
       sst.add(it.key(), it.value());
     }
+
+
+    SSTableMetadata metadata;
+    metadata.level = 0;
+    metadata.path = file_path;
+    metadata.max_key = "TODO: FIX THIS";
+    metadata.min_key = "TODO: FIX THIS";
+
+    manifest_manager_.add_sstable(std::make_unique<SSTableMetadata>(std::move(metadata)));
 
     sst.finish();
 

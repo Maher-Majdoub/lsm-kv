@@ -2,6 +2,7 @@
 #include "lsm/db/manifest/manifest_entry.h"
 
 #include <fstream>
+#include <iostream>
 #include <utility>
 #include <vector>
 #include <ios>
@@ -43,7 +44,7 @@ namespace lsm {
     std::memcpy(&op, buff_.data() + start + size, sizeof(op));
     size += sizeof(op);
 
-    size_t level;
+    ushort level;
     std::memcpy(&level, buff_.data() + start + size, sizeof(level));
     size += sizeof(level);
 
@@ -52,11 +53,11 @@ namespace lsm {
     entry.metadata.level = level;
 
     size_t file_path_size, min_key_size, max_key_size;
-  
+    
     // file path
     std::memcpy(&file_path_size, buff_.data() + start + size, sizeof(file_path_size));
     size += sizeof(file_path_size);
-    entry.metadata.path = std::filesystem::path(std::string(buff_.data() + start + size, file_path_size));
+    entry.metadata.path = std::string(buff_.data() + start + size, file_path_size);
     size += file_path_size;
 
     // min key

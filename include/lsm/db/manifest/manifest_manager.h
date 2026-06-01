@@ -16,7 +16,7 @@ namespace lsm {
 
       void add_sstable(std::shared_ptr<SSTableMetadata> metadata);
 
-    private: 
+    public: 
       std::filesystem::path work_dir_;
       std::unique_ptr<std::ofstream> active_manifest_;
       std::vector<std::vector<SSTableMetadata>> sstables_;
