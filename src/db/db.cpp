@@ -1,6 +1,7 @@
 #include "lsm/db/db.h"
 #include "lsm/db/common/sstable_metadata.h"
 #include "lsm/db/config.h"
+#include "lsm/db/memtable/memtable.h"
 #include "lsm/db/memtable/memtable_iterator.h"
 #include "lsm/db/sstable/sstable_builder.h"
 #include "lsm/services/config_service.h"
@@ -16,7 +17,7 @@
 
 namespace lsm {
   DB::DB(): 
-    memtable_(new Memtable), 
+    memtable_(std::make_unique<Memtable>()), 
     sstables_folder_path_(ConfigService::get("DATA_FOLDER_PATH").value_or("./data")), 
     manifest_manager_(sstables_folder_path_ + "/meta") 
   {
@@ -58,7 +59,7 @@ namespace lsm {
   void DB::post_update_() {
     if (memtable_->size() >= db::config::MAX_MEMTABLE_SIZE) {
       flush_memtable_();
-      memtable_ = new Memtable();
+      memtable_ = std::make_unique<Memtable>();
     }
   }
 
