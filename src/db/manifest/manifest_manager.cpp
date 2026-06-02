@@ -1,7 +1,7 @@
 #include "lsm/db/manifest/manifest_manager.h"
-#include "lsm/db/common/comstants.h"
 #include "lsm/db/manifest/manifest.h"
 #include "lsm/db/manifest/manifest_entry.h"
+#include "lsm/db/sstable/sstable_manager.h"
 #include "lsm/utils/time.h"
 
 #include <cstddef>
@@ -13,10 +13,26 @@
 #include <vector>
 
 namespace lsm {
-  ManifestManager::ManifestManager(const std::filesystem::path& work_dir): work_dir_(work_dir) {
+  ManifestManager::ManifestManager(const std::filesystem::path& work_dir, SSTableManager& sst_manager):
+    work_dir_(work_dir), sst_manager_(sst_manager) {
     std::filesystem::create_directories(work_dir_);
-    
-    load_manifest_();
+  }
+
+  void ManifestManager::load() {
+    std::optional<std::string> existing = read_current_file_();
+
+    std::string manifest_name;
+    if (existing) {
+      manifest_name = *existing;
+      recover_(manifest_name);
+    } else {
+      manifest_name = "MANIFEST-" + current_timestamp();
+      create_(manifest_name);
+    }
+
+    std::filesystem::path path = work_dir_ / manifest_name;
+    std::ofstream manifest_file(path, std::ios::binary | std::ios::app);
+    use_manifest_(manifest_file, manifest_name);
   }
 
   void ManifestManager::add_sstable(std::shared_ptr<SSTableMetadata> metadata) {
@@ -42,49 +58,31 @@ namespace lsm {
     active_manifest_->write(metadata->max_key.data(),  max_key_size);
 
     active_manifest_->flush();
-  }
 
-  void ManifestManager::load_manifest_() {
-    std::optional<std::string> existing = read_current_file_();
-
-    if (existing) recover_(*existing);
-    else create_("MANIFEST-" + current_timestamp());
+    sst_manager_.add(*metadata);
   }
 
   void ManifestManager::recover_(const std::string& name) {
-    sstables_.clear();
-    sstables_.resize(MAX_SSTABLES_LEVELS);
-
     std::filesystem::path path = work_dir_ / name;
 
     Manifest manifest(path);
     std::vector<manifest::Entry> entries = manifest.parse();
 
-    std::unordered_map<std::string, std::unique_ptr<SSTableMetadata>> sstables_mp;
-
     for (manifest::Entry& entry: entries) {
-      std::string path = entry.metadata.path.string();
-
       switch (entry.operation) {
         case manifest::Operation::ADD: {
-          sstables_mp[path] = std::make_unique<SSTableMetadata>(std::move(entry.metadata));
+          sst_manager_.add(std::move(entry.metadata));
           break;
         }
         case manifest::Operation::REMOVE: {
-          sstables_mp.erase(path);
+          sst_manager_.remove(entry.metadata.level, entry.metadata.path);
           break;
         }
         default: throw std::runtime_error("UNKNOWN OPERATION");
       }
     }
 
-    for (auto& [_, metadata]: sstables_mp) {
-      uint8_t level = metadata->level;
-      sstables_[level].push_back(std::move(*metadata));
-    }
-
-    std::ofstream manifest_file(path, std::ios::binary | std::ios::app);
-    use_manifest_(manifest_file, name);
+    
   }
 
   void ManifestManager::create_(const std::string& name) {

@@ -21,6 +21,7 @@ set(SOURCES
   src/db/sstable/sstable_builder.cpp
   src/db/sstable/sstable_block_iterator.cpp
   src/db/sstable/sstable_iterator.cpp
+  src/db/sstable/sstable_manager.cpp
   src/db/compaction/compactor.cpp
   src/db/manifest/manifest.cpp
   src/db/manifest/manifest_manager.cpp

@@ -1,27 +1,27 @@
 #pragma once 
 
 #include "lsm/db/common/sstable_metadata.h"
+#include "lsm/db/sstable/sstable_manager.h"
 
 #include <memory>
 #include <fstream>
 #include <filesystem>
 #include <optional>
 #include <string>
-#include <vector>
 
 namespace lsm {
   class ManifestManager {
     public: 
-      ManifestManager(const std::filesystem::path& work_dir);
+      ManifestManager(const std::filesystem::path& work_dir, SSTableManager& sst_manager_);
 
       void add_sstable(std::shared_ptr<SSTableMetadata> metadata);
+      void load();
 
-    public: 
+    private: 
       std::filesystem::path work_dir_;
       std::unique_ptr<std::ofstream> active_manifest_;
-      std::vector<std::vector<SSTableMetadata>> sstables_;
+      SSTableManager& sst_manager_;
       
-      void load_manifest_();
       void recover_(const std::string& name);
       void create_(const std::string& name);
       void use_manifest_(std::ofstream& manifest, const std::string& name);
