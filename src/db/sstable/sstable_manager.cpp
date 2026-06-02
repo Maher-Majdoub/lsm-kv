@@ -25,4 +25,34 @@ namespace lsm {
       return metadata->path == path;
     });
   }
+
+  std::vector<SSTableMetadata> SSTableManager::getCandidates(const std::string& key) {
+    std::vector<SSTableMetadata> candidates;
+    
+    bool found = false;
+
+    // sstables in level 0 can overlap (check all of them)
+    for (auto& metadata: sstables_[0]) {
+      if (metadata->min_key <= key && metadata->max_key >= key) {
+        candidates.push_back(*metadata);
+        found = true;
+      }
+    } 
+
+    u_short curr_level = 1;
+    // sstables in level 1+ are sorted and not overlapped
+    while (!found && curr_level < MAX_SSTABLES_LEVELS) {
+      for (auto& metadata: sstables_[curr_level]) {
+        if (metadata->min_key <= key && metadata->max_key >= key) {
+          candidates.push_back(*metadata);
+          found = true;
+          break;
+        }
+      }
+      
+      curr_level++;
+    }
+
+    return candidates;
+  };
 }

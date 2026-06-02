@@ -4,6 +4,7 @@
 #include "lsm/db/config.h"
 #include "lsm/db/memtable/memtable.h"
 #include "lsm/db/memtable/memtable_iterator.h"
+#include "lsm/db/sstable/sstable.h"
 #include "lsm/db/sstable/sstable_builder.h"
 #include "lsm/db/sstable/sstable_manager.h"
 #include "lsm/utils/time.h"
@@ -12,8 +13,8 @@
 #include <filesystem>
 #include <memory>
 #include <optional>
-#include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace lsm {
   DB::DB(): 
@@ -26,15 +27,21 @@ namespace lsm {
     manifest_manager_.load();
   }
 
-  std::optional<std::string> DB::get(const std::string& _) {
-    throw std::runtime_error("Method not implemented");
-    // if (auto data = memtable_->get(key)) return data;
+  std::optional<std::string> DB::get(const std::string& key) {
+    // check memtable
+    if (auto data = memtable_->get(key)) return data;
 
-    // for (auto it = sstables_.rbegin(); it != sstables_.rend(); ++it) {
-    //   if (auto data = (*it)->find(key)) return data;
-    // }
+    // check sstables
+    std::vector<SSTableMetadata> sst_candidates = sstable_manager_.getCandidates(key);
+    for (const SSTableMetadata& candidate: sst_candidates ) {
+      SSTable sst(candidate.path);
+      
+      std::optional<std::string> value = sst.find(key);
 
-    // return std::nullopt;
+      if (value) return *value;
+    }
+
+    return std::nullopt;
   }
 
   void DB::set(const std::string& key, const std::string& value) {
@@ -62,16 +69,18 @@ namespace lsm {
     SSTableBuilder sst(file_path);
     MemtableIterator it(*memtable_);
 
-    for (it.first(); !it.is_done(); ++it) {
-      sst.add(it.key(), it.value());
-    }
-
-
     SSTableMetadata metadata;
     metadata.level = 0;
     metadata.path = file_path;
-    metadata.max_key = "TODO: FIX THIS";
-    metadata.min_key = "TODO: FIX THIS";
+
+    it.first();
+    metadata.min_key = it.key();
+
+    // TODO: optimize the max key searching (it should take the last one directly)
+    for (; !it.is_done(); ++it) {
+      sst.add(it.key(), it.value());
+      metadata.max_key = it.key();
+    }
 
     manifest_manager_.add_sstable(std::make_unique<SSTableMetadata>(std::move(metadata)));
 
