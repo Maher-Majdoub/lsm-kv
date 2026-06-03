@@ -10,10 +10,10 @@ int main() {
 
   int n = 1000;
 
-  for (int i = 0; i < n; i++) {
-    std::string key = "key" + std::to_string(i), value = "value" + std::to_string(i);
-    db.set(key, value);
-  }
+  // for (int i = 0; i < n; i++) {
+  //   std::string key = "key" + std::to_string(i), value = "value" + std::to_string(i);
+  //   db.set(key, value);
+  // }
 
   // check all values exist
   for (int i = 0; i < n - 500; i++) {

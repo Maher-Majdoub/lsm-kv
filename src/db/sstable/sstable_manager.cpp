@@ -3,27 +3,37 @@
 #include "lsm/db/common/sstable_metadata.h"
 
 #include <cassert>
+#include <filesystem>
 #include <memory>
 #include <vector>
 
 namespace lsm {
   SSTableManager::SSTableManager() {
-    sstables_.resize(lsm::MAX_SSTABLES_LEVELS);
+    sstables_.resize(MAX_SSTABLES_LEVELS);
+    levels_size_.resize(MAX_SSTABLES_LEVELS, 0);
   }
 
   void SSTableManager::add(SSTableMetadata metadata) {
     const auto level = metadata.level;
     assert(level < sstables_.size());
 
+    levels_size_[level] += std::filesystem::file_size(metadata.path);
+
     sstables_[level].push_back(std::make_unique<SSTableMetadata>(std::move(metadata)));
   } 
 
   void SSTableManager::remove(u_short level, const std::filesystem::path& path) {
     assert(level < sstables_.size());
+    assert(std::filesystem::exists(path)); // deletion should be handled by the manager
+
+    // TODO: check if file exists (should be existing)
 
     std::erase_if(sstables_[level] , [&](const std::unique_ptr<SSTableMetadata>& metadata) {
       return metadata->path == path;
     });
+
+    levels_size_[level] -= std::filesystem::file_size(path);
+    assert(std::filesystem::remove(path));
   }
 
   std::vector<SSTableMetadata> SSTableManager::getCandidates(const std::string& key) {
@@ -55,4 +65,9 @@ namespace lsm {
 
     return candidates;
   };
+
+  uint64_t SSTableManager::getSize(u_short level) {
+    assert(level < MAX_SSTABLES_LEVELS);
+    return levels_size_[level];
+  }
 }
