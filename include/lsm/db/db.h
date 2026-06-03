@@ -1,5 +1,7 @@
 #pragma once
 
+#include "lsm/db/compaction/compactor.h"
+#include "lsm/db/compaction/leveled_compaction_strategy.h"
 #include "lsm/db/manifest/manifest_manager.h"
 #include "lsm/db/sstable/sstable_manager.h"
 #include "memtable/memtable.h"
@@ -19,6 +21,9 @@ namespace lsm {
 
       SSTableManager sstable_manager_;
       ManifestManager manifest_manager_;
+
+      LeveledCompactionStrategy compaction_strategy_;
+      Compactor compactor_;
 
       void post_update_();
       void flush_memtable_();

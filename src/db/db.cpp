@@ -1,6 +1,7 @@
 #include "lsm/db/db.h"
 #include "lsm/db/common/comstants.h"
 #include "lsm/db/common/sstable_metadata.h"
+#include "lsm/db/compaction/compactor.h"
 #include "lsm/db/config.h"
 #include "lsm/db/memtable/memtable.h"
 #include "lsm/db/memtable/memtable_iterator.h"
@@ -11,6 +12,7 @@
 
 #include <cstddef>
 #include <filesystem>
+#include <iostream>
 #include <memory>
 #include <optional>
 #include <string>
@@ -20,11 +22,30 @@ namespace lsm {
   DB::DB(): 
     memtable_(std::make_unique<Memtable>()), 
     sstable_manager_(),
-    manifest_manager_(DB_PATH / "meta", sstable_manager_)
+    manifest_manager_(DB_PATH / "meta", sstable_manager_),
+    compaction_strategy_(LeveledCompactionStrategy(sstable_manager_)),
+    compactor_()
   {
     std::filesystem::create_directories(DB_PATH);
-
     manifest_manager_.load();
+
+    while (true) {
+      auto [candidates, target_level] = 
+        compaction_strategy_.get_next_candidates();
+
+      if (!candidates.size()) break;
+
+      std::cout << "Compacting " << candidates.size() << " to level " << target_level << "\n";
+
+      compactor_.compact(
+        candidates, 
+        DB_PATH / ("level-" + std::to_string(target_level) + current_timestamp() + ".bin")
+      );
+      
+      for (auto candidate: candidates) {
+        sstable_manager_.remove(candidate.level, candidate.path);
+      }
+    }
   }
 
   std::optional<std::string> DB::get(const std::string& key) {
@@ -32,7 +53,7 @@ namespace lsm {
     if (auto data = memtable_->get(key)) return data;
 
     // check sstables
-    std::vector<SSTableMetadata> sst_candidates = sstable_manager_.getCandidates(key);
+    std::vector<SSTableMetadata> sst_candidates = sstable_manager_.get_candidates(key);
     for (const SSTableMetadata& candidate: sst_candidates ) {
       SSTable sst(candidate.path);
       

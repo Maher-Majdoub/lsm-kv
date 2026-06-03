@@ -36,14 +36,16 @@ namespace lsm {
     assert(std::filesystem::remove(path));
   }
 
-  std::vector<SSTableMetadata> SSTableManager::getCandidates(const std::string& key) {
+  std::vector<SSTableMetadata> SSTableManager::get_candidates(const std::string& key) {
     std::vector<SSTableMetadata> candidates;
     
     bool found = false;
 
     // sstables in level 0 can overlap (check all of them)
-    for (auto& metadata: sstables_[0]) {
-      if (metadata->min_key <= key && metadata->max_key >= key) {
+    for (auto& metadata: sstables_[0]) {      
+      if (are_key_ranges_overlapping_(
+        metadata->min_key, metadata->max_key,key, key
+      )) {
         candidates.push_back(*metadata);
         found = true;
       }
@@ -52,8 +54,12 @@ namespace lsm {
     u_short curr_level = 1;
     // sstables in level 1+ are sorted and not overlapped
     while (!found && curr_level < MAX_SSTABLES_LEVELS) {
+      if (!sstables_[curr_level].size()) break;
+
       for (auto& metadata: sstables_[curr_level]) {
-        if (metadata->min_key <= key && metadata->max_key >= key) {
+        if (are_key_ranges_overlapping_(
+          metadata->min_key, metadata->max_key, key, key
+        )) {
           candidates.push_back(*metadata);
           found = true;
           break;
@@ -66,8 +72,43 @@ namespace lsm {
     return candidates;
   };
 
+  std::vector<SSTableMetadata> SSTableManager::get_candidates(
+    const std::string& min_key, const std::string& max_key, u_short level
+  ) {
+    assert(level < MAX_SSTABLES_LEVELS);
+    std::vector<SSTableMetadata> candidates;
+
+    bool found = false;
+
+    for (auto& metadata: sstables_[level]) {
+      if (are_key_ranges_overlapping_(
+        metadata->min_key, metadata->max_key, min_key, max_key
+      )) {
+        candidates.push_back(*metadata);
+        found = true;
+      }
+
+      else if (found) break; // next sstables surely don't overlap with this table
+    }
+
+    return candidates;
+  };
+
   uint64_t SSTableManager::getSize(u_short level) {
     assert(level < MAX_SSTABLES_LEVELS);
     return levels_size_[level];
   }
+
+  SSTableMetadata SSTableManager::get(u_short level, u_short pos) {
+    assert(level < MAX_SSTABLES_LEVELS);
+    assert(pos < sstables_[level].size());
+
+    return *sstables_[level][pos];
+  }
+
+  bool SSTableManager::are_key_ranges_overlapping_(
+    const std::string& start1, const std::string& end1, const std::string& start2, const std::string& end2
+  ) {
+    return (start1 >= start2 && start1 <= end2) || (end1 >= start2 && end1 <= end2);
+  } 
 }
