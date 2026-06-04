@@ -1,5 +1,5 @@
 #include "lsm/db/sstable/sstable_manager.h"
-#include "lsm/db/common/comstants.h"
+#include "lsm/db/common/constants.h"
 #include "lsm/db/common/sstable_metadata.h"
 
 #include <cassert>

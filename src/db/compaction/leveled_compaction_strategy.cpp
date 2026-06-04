@@ -1,6 +1,6 @@
 #include "lsm/db/common/sstable_metadata.h"
 #include "lsm/db/compaction/leveled_compaction_strategy.h"
-#include "lsm/db/common/comstants.h"
+#include "lsm/db/common/constants.h"
 #include "lsm/db/sstable/sstable_manager.h"
 
 #include <cmath>

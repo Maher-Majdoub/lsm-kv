@@ -1,5 +1,5 @@
 #include "lsm/db/db.h"
-#include "lsm/db/common/comstants.h"
+#include "lsm/db/common/constants.h"
 #include "lsm/db/common/sstable_metadata.h"
 #include "lsm/db/compaction/compactor.h"
 #include "lsm/db/config.h"
