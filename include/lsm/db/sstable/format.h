@@ -9,8 +9,8 @@
   [ Record Header | Key(string) | Value(string) ]
 
   RecordHeader 
-    - size_t key_size
-    - size_t value_size
+    - size_byte_t key_size
+    - size_byte_t value_size
 
   
   Indexes Block 
@@ -25,7 +25,7 @@
   Footer
   ---------------
     - offset_t indexes_bloc_start_offset
-    - size_t indexes_bloc_size
+    - size_byte_t indexes_bloc_size
 */
 
 #pragma once 
@@ -38,19 +38,19 @@ namespace lsm::sstable {
   typedef std::pair<offset_t, offset_t> index_t;
 
   struct RecordHeader { 
-    size_t key_size;
-    size_t value_size;
+    size_byte_t key_size;
+    size_byte_t value_size;
 
     RecordHeader() {}
-    RecordHeader(size_t key_size, size_t value_size): key_size(key_size), value_size(value_size) {}
+    RecordHeader(size_byte_t key_size, size_byte_t value_size): key_size(key_size), value_size(value_size) {}
   };
 
   struct Footer { 
     offset_t indexes_bloc_start_offset;
-    size_t indexes_bloc_size;
+    size_byte_t indexes_bloc_size;
 
     Footer() {}
-    Footer(offset_t indexes_bloc_start_offset, size_t indexes_bloc_size): 
+    Footer(offset_t indexes_bloc_start_offset, size_byte_t indexes_bloc_size): 
       indexes_bloc_start_offset(indexes_bloc_start_offset), indexes_bloc_size(indexes_bloc_size) {}
   };
 }

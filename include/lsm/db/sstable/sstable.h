@@ -9,10 +9,13 @@
 #include <vector>
 
 namespace lsm {
+
   class SSTable {
+    friend class SSTableIterator;
+
     public: 
       SSTable(const std::string& file_path);
-      ~SSTable();
+      // ~SSTable();
   
       std::optional<std::string> find(const std::string& key); 
   

@@ -11,7 +11,7 @@ namespace lsm {
 
       SkiplistIterator(const Skiplist<K, V>& list): head_(list.head_), current_(nullptr) {}
 
-      void first() override { current_ = head_; }
+      void first() override { current_ = head_->forward[0]; }
       void next() override { current_ = current_->forward[0]; }
       bool is_done() const override { return current_ == nullptr; }
 

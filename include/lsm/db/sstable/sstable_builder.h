@@ -1,6 +1,7 @@
 #pragma once
 
 #include "config.h"
+#include "lsm/db/common/types.h"
 #include "format.h"
 
 #include <cstddef>
@@ -13,9 +14,9 @@ namespace lsm {
     public: 
       struct BlockState {
         sstable::offset_t offset = 0;
-        size_t size = 0;
+        size_byte_t size = 0;
   
-        bool can_add_entry(size_t entry_size) const { 
+        bool can_add_entry(size_byte_t entry_size) const { 
           return size + entry_size <= config::sstable::MAX_BLOCK_SIZE;
         }
       };

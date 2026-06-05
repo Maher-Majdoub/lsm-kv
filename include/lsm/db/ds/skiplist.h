@@ -1,5 +1,7 @@
 #pragma once
 
+#include "lsm/db/common/types.h"
+
 #include <cstddef>
 #include <random>
 #include <cstdint>
@@ -38,7 +40,7 @@ namespace lsm {
 
       std::optional<V> find(const K& key);
 
-      size_t size();
+      size_byte_t size();
 
     private: 
       int randomLevel();
@@ -50,7 +52,7 @@ namespace lsm {
       const float p_;
       uint64_t seq_;
       mutable std::mt19937 engine_;
-      size_t bytes_ = 0;
+      size_byte_t bytes_ = 0;
   };
 }
 
