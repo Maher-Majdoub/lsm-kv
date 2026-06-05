@@ -1,5 +1,7 @@
 #pragma once
 
+#include "lsm/db/common/types.h"
+
 #include <cstddef>
 
 namespace lsm {
