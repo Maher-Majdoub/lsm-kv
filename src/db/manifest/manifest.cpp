@@ -1,4 +1,5 @@
 #include "lsm/db/manifest/manifest.h"
+#include "lsm/db/common/types.h"
 #include "lsm/db/manifest/manifest_entry.h"
 
 #include <fstream>
@@ -25,7 +26,7 @@ namespace lsm {
   std::vector<manifest::Entry> Manifest::parse() {
     std::vector<manifest::Entry> entries;
 
-    size_t pos = 0;
+    size_byte_t pos = 0;
 
     while (pos < buff_.size()) {
       auto [entry, size] = read_block_(pos);
@@ -37,8 +38,8 @@ namespace lsm {
     return entries;
   }
 
-  std::pair<manifest::Entry, size_t> Manifest::read_block_(size_t start) {
-    size_t size = 0;
+  std::pair<manifest::Entry, size_byte_t> Manifest::read_block_(size_byte_t start) {
+    size_byte_t size = 0;
 
     manifest::Operation op;
     std::memcpy(&op, buff_.data() + start + size, sizeof(op));
@@ -52,7 +53,7 @@ namespace lsm {
     entry.operation = op;
     entry.metadata.level = level;
 
-    size_t file_path_size, min_key_size, max_key_size;
+    size_byte_t file_path_size, min_key_size, max_key_size;
     
     // file path
     std::memcpy(&file_path_size, buff_.data() + start + size, sizeof(file_path_size));

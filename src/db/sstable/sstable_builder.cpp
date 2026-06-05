@@ -16,10 +16,10 @@ namespace lsm {
   void SSTableBuilder::add(const std::string& key, const std::string& value) {
     sstable::RecordHeader record_header(key.size(), value.size());
     
-    size_t key_size = key.size();
-    size_t value_size = value.size();
+    size_byte_t key_size = key.size();
+    size_byte_t value_size = value.size();
   
-    size_t entry_size = sizeof(record_header) + key_size + value_size;
+    size_byte_t entry_size = sizeof(record_header) + key_size + value_size;
   
     if (!current_block_.can_add_entry(entry_size)) flush_block_();
   
@@ -33,7 +33,7 @@ namespace lsm {
   void SSTableBuilder::finish() {
     flush_block_();
   
-    size_t indexes_block_size = index_.size() * sizeof(sstable::index_t);
+    size_byte_t indexes_block_size = index_.size() * sizeof(sstable::index_t);
   
     sstable::Footer footer(file_.tellp(), indexes_block_size);
   

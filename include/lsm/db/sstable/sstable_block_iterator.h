@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lsm/db/iterators/iterator.h"
+#include "lsm/db/common/types.h"
 
 #include <cstddef>
 #include <string>
@@ -21,8 +22,8 @@ namespace lsm {
     private: 
       const std::vector<char> buffer_;
       std::string current_key_, current_value_;
-      size_t pos_;
-      size_t current_size_;
+      size_byte_t pos_;
+      size_byte_t current_size_;
 
       void update_();
   };

@@ -22,7 +22,7 @@ namespace lsm {
     table_.insert(key, TOMBSTONE_);
   }
 
-  size_t Memtable::size() {
+  size_byte_t Memtable::size() {
     return table_.size();
   } 
 }

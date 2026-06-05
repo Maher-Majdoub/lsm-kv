@@ -113,6 +113,6 @@ namespace lsm {
   } 
 
   template <typename K, typename V>
-  size_t Skiplist<K, V>::size() { return bytes_; }
+  size_byte_t Skiplist<K, V>::size() { return bytes_; }
 }
 

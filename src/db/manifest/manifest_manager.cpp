@@ -1,5 +1,6 @@
 #include "lsm/db/manifest/manifest_manager.h"
 #include "lsm/db/common/constants.h"
+#include "lsm/db/common/types.h"
 #include "lsm/db/common/sstable_metadata.h"
 #include "lsm/db/manifest/manifest.h"
 #include "lsm/db/manifest/manifest_entry.h"
@@ -43,9 +44,9 @@ namespace lsm {
     // write [operation][level][file_path_size][file_path][min_key_size][min_key][max_key_size][max_key]
     std::string file_path = metadata->path.string();
 
-    size_t file_path_size = file_path.size();
-    size_t min_key_size = metadata->min_key.size();
-    size_t max_key_size = metadata->max_key.size();
+    size_byte_t file_path_size = file_path.size();
+    size_byte_t min_key_size = metadata->min_key.size();
+    size_byte_t max_key_size = metadata->max_key.size();
 
     manifest::Operation op = manifest::Operation::ADD;
 
@@ -67,9 +68,9 @@ namespace lsm {
   void ManifestManager::remove_sstable(const SSTableMetadata& metadata) {
     std::string file_path = metadata.path.string();
 
-    size_t file_path_size = file_path.size();
-    size_t min_key_size = metadata.min_key.size();
-    size_t max_key_size = metadata.max_key.size();
+    size_byte_t file_path_size = file_path.size();
+    size_byte_t min_key_size = metadata.min_key.size();
+    size_byte_t max_key_size = metadata.max_key.size();
 
     manifest::Operation op = manifest::Operation::REMOVE;
 

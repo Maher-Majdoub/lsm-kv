@@ -1,5 +1,6 @@
 #include "lsm/db/sstable/sstable_block_iterator.h"
 #include "lsm/db/sstable/sstable.h"
+#include "lsm/db/common/types.h"
 
 #include <cstring>
 #include <fstream>
@@ -86,7 +87,7 @@ namespace lsm {
   
   std::vector<char> SSTable::read_block_(const sstable::index_t& block_index) {
     const auto& [block_start, block_end] = block_index;
-    size_t block_size = block_end - block_start;
+    size_byte_t block_size = block_end - block_start;
   
     file_.seekg(block_start, std::ios::beg);
   

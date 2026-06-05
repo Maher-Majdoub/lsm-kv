@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lsm/db/ds/skiplist.h"
+#include "lsm/db/common/types.h"
 
 #include <cstddef>
 #include <string>
@@ -19,7 +20,7 @@ namespace lsm {
 
       void remove(const std::string& key);
 
-      size_t size();
+      size_byte_t size();
 
     private:
       Skiplist<std::string, std::string> table_;

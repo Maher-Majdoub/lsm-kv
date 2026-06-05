@@ -22,7 +22,7 @@ namespace lsm {
     private: 
       std::unique_ptr<SSTable> sstable_;
 
-      size_t p_index_;
+      size_byte_t p_index_;
       std::unique_ptr<SSTableBlockIterator> block_it_;
 
       void update_block_iterator_();
