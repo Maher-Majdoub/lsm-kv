@@ -1,7 +1,8 @@
 #include "lsm/db/manifest/manifest_manager.h"
+#include "lsm/db/common/constants.h"
+#include "lsm/db/common/sstable_metadata.h"
 #include "lsm/db/manifest/manifest.h"
 #include "lsm/db/manifest/manifest_entry.h"
-#include "lsm/db/sstable/sstable_manager.h"
 #include "lsm/utils/time.h"
 
 #include <cstddef>
@@ -10,29 +11,32 @@
 #include <optional>
 #include <memory>
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace lsm {
-  ManifestManager::ManifestManager(const std::filesystem::path& work_dir, SSTableManager& sst_manager):
-    work_dir_(work_dir), sst_manager_(sst_manager) {
+  ManifestManager::ManifestManager(const std::filesystem::path& work_dir):
+    work_dir_(work_dir) {
     std::filesystem::create_directories(work_dir_);
   }
 
-  void ManifestManager::load() {
+  std::vector<std::vector<std::shared_ptr<SSTableMetadata>>> ManifestManager::load() {
     std::optional<std::string> existing = read_current_file_();
 
     std::string manifest_name;
-    if (existing) {
-      manifest_name = *existing;
-      recover_(manifest_name);
-    } else {
-      manifest_name = "MANIFEST-" + current_timestamp();
-      create_(manifest_name);
-    }
 
+    if (!existing) {
+      manifest_name = "MANIFEST-" + current_timestamp();
+    } else {
+      manifest_name = *existing;
+    }
+    
     std::filesystem::path path = work_dir_ / manifest_name;
     std::ofstream manifest_file(path, std::ios::binary | std::ios::app);
     use_manifest_(manifest_file, manifest_name);
+    
+    return recover_(manifest_name);
   }
 
   void ManifestManager::add_sstable(std::shared_ptr<SSTableMetadata> metadata) {
@@ -58,41 +62,77 @@ namespace lsm {
     active_manifest_->write(metadata->max_key.data(),  max_key_size);
 
     active_manifest_->flush();
-
-    sst_manager_.add(*metadata);
   }
 
-  void ManifestManager::recover_(const std::string& name) {
-    std::filesystem::path path = work_dir_ / name;
+  void ManifestManager::remove_sstable(const SSTableMetadata& metadata) {
+    std::string file_path = metadata.path.string();
 
+    size_t file_path_size = file_path.size();
+    size_t min_key_size = metadata.min_key.size();
+    size_t max_key_size = metadata.max_key.size();
+
+    manifest::Operation op = manifest::Operation::REMOVE;
+
+    active_manifest_->write((char*) &op, sizeof(op));
+    active_manifest_->write((char*) &metadata.level, sizeof(metadata.level));
+
+    active_manifest_->write((char*) &file_path_size, sizeof(file_path_size));
+    active_manifest_->write(file_path.data(),  file_path_size);
+
+    active_manifest_->write((char*) &min_key_size, sizeof(min_key_size));
+    active_manifest_->write(metadata.min_key.data(),  min_key_size);
+
+    active_manifest_->write((char*) &max_key_size, sizeof(max_key_size));
+    active_manifest_->write(metadata.max_key.data(),  max_key_size);
+
+    active_manifest_->flush();
+  }
+
+  std::vector<std::vector<std::shared_ptr<SSTableMetadata>>> ManifestManager::recover_(const std::string& name) {
+    std::filesystem::path path = work_dir_ / name;
+    
     Manifest manifest(path);
     std::vector<manifest::Entry> entries = manifest.parse();
+    
+    std::vector<std::unordered_map<std::string, SSTableMetadata>> sstables(
+      MAX_SSTABLES_LEVELS, 
+      std::unordered_map<std::string, SSTableMetadata>()
+    );
 
     for (manifest::Entry& entry: entries) {
+      std::filesystem::path path = entry.metadata.path;
+      u_short level = entry.metadata.level;
       switch (entry.operation) {
         case manifest::Operation::ADD: {
-          sst_manager_.add(std::move(entry.metadata));
+          sstables[level][path] = std::move(entry.metadata);
+          // sst_manager_.add(std::move(entry.metadata));
           break;
         }
         case manifest::Operation::REMOVE: {
-          sst_manager_.remove(entry.metadata.level, entry.metadata.path);
+          sstables[level].erase(path);
+          // sst_manager_.remove(entry.metadata.level, entry.metadata.path);
           break;
         }
         default: throw std::runtime_error("UNKNOWN OPERATION");
       }
     }
 
-    
+    std::vector<std::vector<std::shared_ptr<SSTableMetadata>>> result(MAX_SSTABLES_LEVELS);
+    for (ushort level = 0; level < MAX_SSTABLES_LEVELS; level++) {
+      for (auto& [key, value]: sstables[level]) {
+        result[level].push_back(std::make_shared<SSTableMetadata>(std::move(value)));
+      }
+    }
+
+    return result;
   }
 
-  void ManifestManager::create_(const std::string& name) {
-    std::filesystem::path path = work_dir_ / name;
-    std::ofstream manifest(path, std::ios::binary | std::ios::app);
+  // void ManifestManager::create_(const std::string& name) {
+  //   std::filesystem::path path = work_dir_ / name;
+  //   std::ofstream manifest(path, std::ios::binary | std::ios::app);
 
-    // TODO: Add Manifest Header
-    
-    use_manifest_(manifest, name);
-  }
+  //   // TODO: Add Manifest Header
+  // }
 
   std::optional<std::string> ManifestManager::read_current_file_() {
     std::filesystem::path file_path = work_dir_ / ManifestManager::CURRENT_FILE_NAME;

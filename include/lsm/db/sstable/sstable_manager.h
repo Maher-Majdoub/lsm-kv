@@ -12,6 +12,7 @@ namespace lsm {
 
       void add(SSTableMetadata metadata);
       void remove(u_short level, const std::filesystem::path& path);
+      void set_sstables(std::vector<std::vector<std::shared_ptr<SSTableMetadata>>>& sstables);
       SSTableMetadata get(u_short level, u_short pos);
       std::vector<SSTableMetadata> get_candidates(const std::string& key);
       std::vector<SSTableMetadata> get_candidates(
@@ -20,7 +21,7 @@ namespace lsm {
       uint64_t getSize(u_short level);
 
     private: 
-      std::vector<std::vector<std::unique_ptr<SSTableMetadata>>> sstables_;
+      std::vector<std::vector<std::shared_ptr<SSTableMetadata>>> sstables_;
       std::vector<uint64_t> levels_size_;
 
       bool are_key_ranges_overlapping_(

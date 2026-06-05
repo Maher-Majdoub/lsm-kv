@@ -7,6 +7,6 @@
 namespace lsm {
   class Compactor {
     public: 
-      void compact(std::vector<SSTableMetadata>& input, std::filesystem::path output_path);
+      std::pair<std::string, std::string> compact(std::vector<SSTableMetadata>& input, std::filesystem::path output_path);
   }; 
 }

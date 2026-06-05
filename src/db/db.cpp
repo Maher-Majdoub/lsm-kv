@@ -22,12 +22,15 @@ namespace lsm {
   DB::DB(): 
     memtable_(std::make_unique<Memtable>()), 
     sstable_manager_(),
-    manifest_manager_(DB_PATH / "meta", sstable_manager_),
+    manifest_manager_(DB_PATH / "meta"),
     compaction_strategy_(LeveledCompactionStrategy(sstable_manager_)),
     compactor_()
   {
     std::filesystem::create_directories(DB_PATH);
-    manifest_manager_.load();
+
+    auto sstables = manifest_manager_.load();
+
+    sstable_manager_.set_sstables(sstables);
 
     while (true) {
       auto [candidates, target_level] = 
@@ -37,13 +40,26 @@ namespace lsm {
 
       std::cout << "Compacting " << candidates.size() << " to level " << target_level << "\n";
 
-      compactor_.compact(
+      std::filesystem::path output_path =
+        DB_PATH / ("level-" + std::to_string(target_level) + current_timestamp() + ".bin");
+
+      auto keys = compactor_.compact(
         candidates, 
-        DB_PATH / ("level-" + std::to_string(target_level) + current_timestamp() + ".bin")
+       output_path
       );
-      
+
+      SSTableMetadata metadata;
+      metadata.level = target_level;
+      metadata.path = output_path;
+      metadata.min_key = keys.first;
+      metadata.max_key = keys.second;
+
+      sstable_manager_.add(metadata);
+      manifest_manager_.add_sstable(std::make_unique<SSTableMetadata>(metadata));
+
       for (auto candidate: candidates) {
         sstable_manager_.remove(candidate.level, candidate.path);
+        manifest_manager_.remove_sstable(candidate);
       }
     }
   }
@@ -54,6 +70,7 @@ namespace lsm {
 
     // check sstables
     std::vector<SSTableMetadata> sst_candidates = sstable_manager_.get_candidates(key);
+
     for (const SSTableMetadata& candidate: sst_candidates ) {
       SSTable sst(candidate.path);
       
@@ -103,7 +120,8 @@ namespace lsm {
       metadata.max_key = it.key();
     }
 
-    manifest_manager_.add_sstable(std::make_unique<SSTableMetadata>(std::move(metadata)));
+    sstable_manager_.add(metadata);
+    manifest_manager_.add_sstable(std::make_shared<SSTableMetadata>(std::move(metadata)));
 
     sst.finish();
   }
