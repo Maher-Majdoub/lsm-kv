@@ -27,8 +27,6 @@ namespace lsm {
     assert(level < sstables_.size());
     assert(std::filesystem::exists(path)); // deletion should be handled by the manager
 
-    // TODO: check if file exists (should be existing)
-
     std::erase_if(sstables_[level] , [&](const std::shared_ptr<SSTableMetadata>& metadata) {
       return metadata->path == path;
     });

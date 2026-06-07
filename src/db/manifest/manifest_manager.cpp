@@ -106,12 +106,10 @@ namespace lsm {
       switch (entry.operation) {
         case manifest::Operation::ADD: {
           sstables[level][path] = std::move(entry.metadata);
-          // sst_manager_.add(std::move(entry.metadata));
           break;
         }
         case manifest::Operation::REMOVE: {
           sstables[level].erase(path);
-          // sst_manager_.remove(entry.metadata.level, entry.metadata.path);
           break;
         }
         default: throw std::runtime_error("UNKNOWN OPERATION");
@@ -127,13 +125,6 @@ namespace lsm {
 
     return result;
   }
-
-  // void ManifestManager::create_(const std::string& name) {
-  //   std::filesystem::path path = work_dir_ / name;
-  //   std::ofstream manifest(path, std::ios::binary | std::ios::app);
-
-  //   // TODO: Add Manifest Header
-  // }
 
   std::optional<std::string> ManifestManager::read_current_file_() {
     std::filesystem::path file_path = work_dir_ / ManifestManager::CURRENT_FILE_NAME;
