@@ -8,6 +8,8 @@
 #include "lsm/db/sstable/sstable.h"
 #include "lsm/db/sstable/sstable_builder.h"
 #include "lsm/db/sstable/sstable_manager.h"
+#include "lsm/db/wal/wal_iterator.h"
+#include "lsm/db/wal/wal_manager.h"
 #include "lsm/utils/time.h"
 
 #include <cstddef>
@@ -20,9 +22,10 @@
 
 namespace lsm {
   DB::DB(): 
-    memtable_(std::make_unique<Memtable>()), 
+    memtable_(std::make_unique<Memtable>()),
     sstable_manager_(),
     manifest_manager_(DB_PATH / "meta"),
+    wal_manager_(DB_PATH / "wal"),
     compaction_strategy_(LeveledCompactionStrategy(sstable_manager_)),
     compactor_()
   {
@@ -62,6 +65,15 @@ namespace lsm {
         manifest_manager_.remove_sstable(candidate);
       }
     }
+
+    std::optional<WALIterator> it = wal_manager_.recover();
+
+    if (it) {
+      while (!it->is_done()) {
+        set(it->key(), it->value());
+        it->next();
+      }
+    }
   }
 
   std::optional<std::string> DB::get(const std::string& key) {
@@ -83,11 +95,14 @@ namespace lsm {
   }
 
   void DB::set(const std::string& key, const std::string& value) {
+    wal_manager_.add_entry(key, value);
     memtable_->set(key, value);
     post_update_();
   }
 
   void DB::remove(const std::string& key) {
+    // TODO: move handling tombstone logic to the engine level
+    wal_manager_.add_entry(key, "__TOMBSTONE__");
     memtable_->remove(key);
     post_update_();
   }
@@ -120,6 +135,7 @@ namespace lsm {
       metadata.max_key = it.key();
     }
 
+    wal_manager_.rotate();
     sstable_manager_.add(metadata);
     manifest_manager_.add_sstable(std::make_shared<SSTableMetadata>(std::move(metadata)));
 
