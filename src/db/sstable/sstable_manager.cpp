@@ -1,5 +1,5 @@
 #include "lsm/db/sstable/sstable_manager.h"
-#include "lsm/db/common/constants.h"
+#include "lsm/db/common/config.h"
 #include "lsm/db/common/sstable_metadata.h"
 
 #include <cassert>
@@ -10,8 +10,8 @@
 
 namespace lsm {
   SSTableManager::SSTableManager() {
-    sstables_.resize(MAX_SSTABLES_LEVELS);
-    levels_size_.resize(MAX_SSTABLES_LEVELS, 0);
+    sstables_.resize(config::MAX_SSTABLES_LEVELS);
+    levels_size_.resize(config::MAX_SSTABLES_LEVELS, 0);
   }
 
   void SSTableManager::add(SSTableMetadata metadata) {
@@ -27,8 +27,6 @@ namespace lsm {
     assert(level < sstables_.size());
     assert(std::filesystem::exists(path)); // deletion should be handled by the manager
 
-    // TODO: check if file exists (should be existing)
-
     std::erase_if(sstables_[level] , [&](const std::shared_ptr<SSTableMetadata>& metadata) {
       return metadata->path == path;
     });
@@ -40,7 +38,7 @@ namespace lsm {
   void SSTableManager::set_sstables(std::vector<std::vector<std::shared_ptr<SSTableMetadata>>>& sstables) {
     sstables_.assign(std::move_iterator(sstables.begin()), std::move_iterator(sstables.end()));
 
-    for (u_short level = 0; level < MAX_SSTABLES_LEVELS; level++) {
+    for (u_short level = 0; level < config::MAX_SSTABLES_LEVELS; level++) {
       levels_size_[level] = 0;
 
       for (auto metadata: sstables_[level]) 
@@ -64,7 +62,7 @@ namespace lsm {
 
     u_short curr_level = 1;
     // sstables in level 1+ are sorted and not overlapped
-    while (!found && curr_level < MAX_SSTABLES_LEVELS) {
+    while (!found && curr_level < config::MAX_SSTABLES_LEVELS) {
       if (sstables_[curr_level].size()) {
         for (auto& metadata: sstables_[curr_level]) {
           if (are_key_ranges_overlapping_(
@@ -86,7 +84,7 @@ namespace lsm {
   std::vector<SSTableMetadata> SSTableManager::get_candidates(
     const std::string& min_key, const std::string& max_key, u_short level
   ) {
-    assert(level < MAX_SSTABLES_LEVELS);
+    assert(level < config::MAX_SSTABLES_LEVELS);
     std::vector<SSTableMetadata> candidates;
 
     bool found = false;
@@ -106,12 +104,12 @@ namespace lsm {
   };
 
   uint64_t SSTableManager::getSize(u_short level) {
-    assert(level < MAX_SSTABLES_LEVELS);
+    assert(level < config::MAX_SSTABLES_LEVELS);
     return levels_size_[level];
   }
 
   SSTableMetadata SSTableManager::get(u_short level, u_short pos) {
-    assert(level < MAX_SSTABLES_LEVELS);
+    assert(level < config::MAX_SSTABLES_LEVELS);
     assert(pos < sstables_[level].size());
 
     return *sstables_[level][pos];

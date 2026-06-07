@@ -12,18 +12,11 @@ namespace lsm {
     friend class MemtableIterator;
     
     public: 
-      Memtable();
-
       void set(const std::string& key, const std::string& value);
-
       std::optional<std::string> get(const std::string& key);
-
-      void remove(const std::string& key);
-
       size_byte_t size();
 
     private:
       Skiplist<std::string, std::string> table_;
-      const std::string TOMBSTONE_;
   };
 }

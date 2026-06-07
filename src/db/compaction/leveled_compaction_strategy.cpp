@@ -1,6 +1,6 @@
 #include "lsm/db/common/sstable_metadata.h"
 #include "lsm/db/compaction/leveled_compaction_strategy.h"
-#include "lsm/db/common/constants.h"
+#include "lsm/db/common/config.h"
 #include "lsm/db/sstable/sstable_manager.h"
 
 #include <cmath>
@@ -16,7 +16,7 @@ namespace lsm {
     std::vector<SSTableMetadata> candidates;
     u_short target_level = 0;
 
-    for (u_short level = 0; level < MAX_SSTABLES_LEVELS - 1; level++) {
+    for (u_short level = 0; level < config::MAX_SSTABLES_LEVELS - 1; level++) {
       uint64_t size = sst_manager_.getSize(level);
       
       if (size > get_max_level_size_(level)) {
@@ -43,6 +43,6 @@ namespace lsm {
   }
   
   uint64_t LeveledCompactionStrategy::get_max_level_size_(u_short level) {
-    return BASE_SSTABLE_LEVEL_SIZE * std::pow(SSTABLE_LEVEL_MULTIPLICATION_FACTOR, level);
+    return config::BASE_SSTABLE_LEVEL_SIZE * std::pow(config::SSTABLE_LEVEL_MULTIPLICATION_FACTOR, level);
   }
 }
