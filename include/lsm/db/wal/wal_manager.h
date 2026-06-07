@@ -19,6 +19,7 @@ namespace lsm {
     private: 
       std::filesystem::path work_dir_;
       std::optional<WALBuilder> wal_builder_;
+      std::optional<std::filesystem::path> curr_wal_path_;
       
       std::optional<std::string> read_current_file_();
       void update_current_file(const std::string& wal_name);

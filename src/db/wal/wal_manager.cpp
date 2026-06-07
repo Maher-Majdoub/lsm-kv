@@ -34,10 +34,17 @@ namespace lsm {
   }
 
   void WALManager::rotate() {
-    // TODO: delete the previous wal
     std::string wal_name = "WALL-" + current_timestamp();
 
     wal_builder_ = WALBuilder(work_dir_ / wal_name);
+
+    if (curr_wal_path_ && std::filesystem::exists(*curr_wal_path_)) {
+      // delete previous wal
+      std::filesystem::remove(*curr_wal_path_);
+    } 
+
+    curr_wal_path_ = work_dir_ / wal_name;
+
     update_current_file(wal_name);
   }
 
