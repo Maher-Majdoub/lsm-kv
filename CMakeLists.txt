@@ -26,6 +26,10 @@ set(SOURCES
   src/db/compaction/leveled_compaction_strategy.cpp
   src/db/manifest/manifest.cpp
   src/db/manifest/manifest_manager.cpp
+  src/db/wal/wal.cpp
+  src/db/wal/wal_builder.cpp
+  src/db/wal/wal_iterator.cpp
+  src/db/wal/wal_manager.cpp
   src/services/config_service.cpp
 )
 

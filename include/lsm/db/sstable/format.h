@@ -30,6 +30,8 @@
 
 #pragma once 
 
+#include "lsm/db/common/types.h"
+
 #include <cstdint>
 #include <utility>
 
