@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <filesystem>
+#include <string>
 
 namespace lsm::config {
   constexpr size_byte_t MAX_MEMTABLE_SIZE = 20 * 1024;
@@ -14,4 +15,6 @@ namespace lsm::config {
   constexpr uint8_t SSTABLE_LEVEL_MULTIPLICATION_FACTOR = 2;
 
   inline std::filesystem::path DB_PATH = ConfigService::get("DATA_FOLDER_PATH").value_or("./data");
+
+  constexpr std::string TOMBSTONE = "__TOMBSTONE__";
 }

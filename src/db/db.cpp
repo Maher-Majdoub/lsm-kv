@@ -77,33 +77,40 @@ namespace lsm {
   }
 
   std::optional<std::string> DB::get(const std::string& key) {
+    std::optional<std::string> value;
+
     // check memtable
-    if (auto data = memtable_->get(key)) return data;
+    value = memtable_->get(key);
 
-    // check sstables
-    std::vector<SSTableMetadata> sst_candidates = sstable_manager_.get_candidates(key);
-
-    for (const SSTableMetadata& candidate: sst_candidates ) {
-      SSTable sst(candidate.path);
-      
-      std::optional<std::string> value = sst.find(key);
-
-      if (value) return *value;
+    if (value == std::nullopt) {
+      // check sstables
+      std::vector<SSTableMetadata> sst_candidates = sstable_manager_.get_candidates(key);
+  
+      for (const SSTableMetadata& candidate: sst_candidates ) {
+        SSTable sst(candidate.path);
+        value = sst.find(key);
+        if (value) break;
+      }
     }
 
-    return std::nullopt;
+    if (value && *value == config::TOMBSTONE) return std::nullopt; // key deleted
+    return value;
   }
 
   void DB::set(const std::string& key, const std::string& value) {
+    if (value == config::TOMBSTONE) {
+      std::cerr << "RESERVED KEYWORD: " << value << "\n";
+      return;
+    }
+
     wal_manager_.add_entry(key, value);
     memtable_->set(key, value);
     post_update_();
   }
 
   void DB::remove(const std::string& key) {
-    // TODO: move handling tombstone logic to the engine level
-    wal_manager_.add_entry(key, "__TOMBSTONE__");
-    memtable_->remove(key);
+    wal_manager_.add_entry(key, config::TOMBSTONE);
+    memtable_->set(key, config::TOMBSTONE);
     post_update_();
   }
 
