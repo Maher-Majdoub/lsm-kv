@@ -1,8 +1,8 @@
 #include "lsm/db/db.h"
-#include "lsm/db/common/constants.h"
+
 #include "lsm/db/common/sstable_metadata.h"
 #include "lsm/db/compaction/compactor.h"
-#include "lsm/db/config.h"
+#include "lsm/db/common/config.h"
 #include "lsm/db/memtable/memtable.h"
 #include "lsm/db/memtable/memtable_iterator.h"
 #include "lsm/db/sstable/sstable.h"
@@ -24,12 +24,12 @@ namespace lsm {
   DB::DB(): 
     memtable_(std::make_unique<Memtable>()),
     sstable_manager_(),
-    manifest_manager_(DB_PATH / "meta"),
-    wal_manager_(DB_PATH / "wal"),
+    manifest_manager_(config::DB_PATH / "meta"),
+    wal_manager_(config::DB_PATH / "wal"),
     compaction_strategy_(LeveledCompactionStrategy(sstable_manager_)),
     compactor_()
   {
-    std::filesystem::create_directories(DB_PATH);
+    std::filesystem::create_directories(config::DB_PATH);
 
     auto sstables = manifest_manager_.load();
 
@@ -44,7 +44,7 @@ namespace lsm {
       std::cout << "Compacting " << candidates.size() << " to level " << target_level << "\n";
 
       std::filesystem::path output_path =
-        DB_PATH / ("level-" + std::to_string(target_level) + current_timestamp() + ".bin");
+        config::DB_PATH / ("level-" + std::to_string(target_level) + current_timestamp() + ".bin");
 
       auto keys = compactor_.compact(
         candidates, 
@@ -108,7 +108,7 @@ namespace lsm {
   }
 
   void DB::post_update_() {
-    if (memtable_->size() >= db::config::MAX_MEMTABLE_SIZE) {
+    if (memtable_->size() >= config::MAX_MEMTABLE_SIZE) {
       flush_memtable_();
       memtable_ = std::make_unique<Memtable>();
     }
@@ -117,7 +117,7 @@ namespace lsm {
   void DB::flush_memtable_() {
     if (!memtable_->size()) return;
 
-    const std::string file_path = DB_PATH / (current_timestamp() + ".bin");
+    const std::string file_path = config::DB_PATH / (current_timestamp() + ".bin");
 
     SSTableBuilder sst(file_path);
     MemtableIterator it(*memtable_);

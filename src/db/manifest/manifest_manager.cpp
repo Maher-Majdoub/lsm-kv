@@ -1,5 +1,5 @@
 #include "lsm/db/manifest/manifest_manager.h"
-#include "lsm/db/common/constants.h"
+#include "lsm/db/common/config.h"
 #include "lsm/db/common/types.h"
 #include "lsm/db/common/sstable_metadata.h"
 #include "lsm/db/manifest/manifest.h"
@@ -96,7 +96,7 @@ namespace lsm {
     std::vector<manifest::Entry> entries = manifest.parse();
     
     std::vector<std::unordered_map<std::string, SSTableMetadata>> sstables(
-      MAX_SSTABLES_LEVELS, 
+      config::MAX_SSTABLES_LEVELS, 
       std::unordered_map<std::string, SSTableMetadata>()
     );
 
@@ -118,8 +118,8 @@ namespace lsm {
       }
     }
 
-    std::vector<std::vector<std::shared_ptr<SSTableMetadata>>> result(MAX_SSTABLES_LEVELS);
-    for (ushort level = 0; level < MAX_SSTABLES_LEVELS; level++) {
+    std::vector<std::vector<std::shared_ptr<SSTableMetadata>>> result(config::MAX_SSTABLES_LEVELS);
+    for (ushort level = 0; level < config::MAX_SSTABLES_LEVELS; level++) {
       for (auto& [key, value]: sstables[level]) {
         result[level].push_back(std::make_shared<SSTableMetadata>(std::move(value)));
       }
