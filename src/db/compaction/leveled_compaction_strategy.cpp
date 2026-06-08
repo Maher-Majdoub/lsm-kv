@@ -3,7 +3,6 @@
 #include "lsm/db/common/config.h"
 #include "lsm/db/sstable/sstable_manager.h"
 
-#include <cmath>
 #include <iterator>
 #include <utility>
 #include <vector>
@@ -43,6 +42,12 @@ namespace lsm {
   }
   
   uint64_t LeveledCompactionStrategy::get_max_level_size_(u_short level) {
-    return config::BASE_SSTABLE_LEVEL_SIZE * std::pow(config::SSTABLE_LEVEL_MULTIPLICATION_FACTOR, level);
+    uint64_t size = config::BASE_SSTABLE_LEVEL_SIZE;
+
+    for (uint16_t i = 0; i < level; i++) {
+        size *= config::SSTABLE_LEVEL_MULTIPLICATION_FACTOR;
+    }
+
+    return size;
   }
 }

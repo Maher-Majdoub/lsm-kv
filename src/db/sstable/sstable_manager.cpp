@@ -2,6 +2,7 @@
 #include "lsm/db/common/config.h"
 #include "lsm/db/common/sstable_metadata.h"
 
+#include <algorithm>
 #include <cassert>
 #include <filesystem>
 #include <iterator>
@@ -31,7 +32,8 @@ namespace lsm {
       return metadata->path == path;
     });
 
-    levels_size_[level] -= std::filesystem::file_size(path);
+    
+    levels_size_[level] -= std::min((uint64_t)std::filesystem::file_size(path), levels_size_[level]);
     std::filesystem::remove(path);
   }
 

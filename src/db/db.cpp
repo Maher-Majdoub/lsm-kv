@@ -18,6 +18,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <sys/types.h>
 #include <vector>
 
 namespace lsm {
@@ -35,37 +36,6 @@ namespace lsm {
 
     sstable_manager_.set_sstables(sstables);
 
-    while (true) {
-      auto [candidates, target_level] = 
-        compaction_strategy_.get_next_candidates();
-
-      if (!candidates.size()) break;
-
-      std::cout << "Compacting " << candidates.size() << " to level " << target_level << "\n";
-
-      std::filesystem::path output_path =
-        config::DB_PATH / ("level-" + std::to_string(target_level) + current_timestamp() + ".bin");
-
-      auto keys = compactor_.compact(
-        candidates, 
-       output_path
-      );
-
-      SSTableMetadata metadata;
-      metadata.level = target_level;
-      metadata.path = output_path;
-      metadata.min_key = keys.first;
-      metadata.max_key = keys.second;
-
-      sstable_manager_.add(metadata);
-      manifest_manager_.add_sstable(std::make_unique<SSTableMetadata>(metadata));
-
-      for (auto candidate: candidates) {
-        sstable_manager_.remove(candidate.level, candidate.path);
-        manifest_manager_.remove_sstable(candidate);
-      }
-    }
-
     std::optional<WALIterator> it = wal_manager_.recover();
 
     if (it) {
@@ -74,6 +44,8 @@ namespace lsm {
         it->next();
       }
     }
+
+    consider_compaction_();
   }
 
   std::optional<std::string> DB::get(const std::string& key) {
@@ -147,5 +119,40 @@ namespace lsm {
     manifest_manager_.add_sstable(std::make_shared<SSTableMetadata>(std::move(metadata)));
 
     sst.finish();
+
+    consider_compaction_();
+  }
+
+  void DB::consider_compaction_() {
+    for (ushort i = 0; i < config::MAX_ONE_TIME_COMPACTION_CYCLES; i++) {
+      auto [candidates, target_level] = 
+        compaction_strategy_.get_next_candidates();
+
+      if (!candidates.size()) break;;
+
+      std::cout << "Compacting " << candidates.size() << " sstables to " << target_level << "\n";
+
+      std::filesystem::path output_path =
+        config::DB_PATH / ("level-" + std::to_string(target_level) + current_timestamp() + ".bin");
+
+      auto keys = compactor_.compact(
+        candidates, 
+       output_path
+      );
+
+      SSTableMetadata metadata;
+      metadata.level = target_level;
+      metadata.path = output_path;
+      metadata.min_key = keys.first;
+      metadata.max_key = keys.second;
+
+      sstable_manager_.add(metadata);
+      manifest_manager_.add_sstable(std::make_unique<SSTableMetadata>(metadata));
+
+      for (auto candidate: candidates) {
+        sstable_manager_.remove(candidate.level, candidate.path);
+        manifest_manager_.remove_sstable(candidate);
+      }
+    }
   }
 }
