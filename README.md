@@ -1,6 +1,6 @@
 # LSM-KV: A Log-Structured Merge-Tree Key-Value Store
 
-> Built from scratch in C++17 as a hands-on companion to reading *Designing Data-Intensive Applications* (Kleppmann).
+> Built from scratch in C++ as a hands-on companion to reading *Designing Data-Intensive Applications* (Kleppmann).
 
 ---
 
