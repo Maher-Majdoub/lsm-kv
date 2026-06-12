@@ -8,12 +8,18 @@
 int main() {
   lsm::DB db;
 
-  int n = 1000;
+  int n = 100'000;
 
-  // for (int i = 0; i < n; i++) {
-  //   std::string key = "key" + std::to_string(i), value = "value" + std::to_string(i);
-  //   db.set(key, value);
-  // }
+  auto start = std::chrono::high_resolution_clock::now();
+  for (int i = 0; i < n; i++) {
+    std::string key = "key" + std::to_string(i), value = "value" + std::to_string(i);
+    db.set(key, value);
+  }
+
+  auto end = std::chrono::high_resolution_clock::now();
+
+  std::chrono::duration<double> duration = end - start;
+  std::cout << "Time: " << duration.count() << " seconds\n";
 
   // check all values exist
   for (int i = 0; i < n; i++) {
