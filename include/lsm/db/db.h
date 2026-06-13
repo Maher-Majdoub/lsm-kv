@@ -29,5 +29,6 @@ namespace lsm {
 
       void post_update_();
       void flush_memtable_();
+      void consider_compaction_();
   };
 }
